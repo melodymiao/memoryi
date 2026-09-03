@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — pulled from Figma (drank file, node 1661-6796 "Card component +
+ * color palette" and the screen frames under 1614-984). See THEME.md for the full
+ * writeup of where each value comes from and how to extend this palette.
+ *
+ * Tailwind v4 turns every var below into real utility classes automatically:
+ * --color-ink        -> bg-ink / text-ink / border-ink
+ * --font-display      -> font-display
+ * --radius-card       -> rounded-card
+ * --spacing-screen-x  -> px-screen-x
+ * --shadow-float      -> shadow-float
+ */
+@theme {
+  /* Neutrals (app chrome: backgrounds, primary/secondary text) */
+  --color-background: #fffbf5;
+  --color-surface: #f5efe4;
+  --color-ink: #422f0e;
+  --color-ink-soft: #a6a69e;
+
+  /* Accent (active filter pills, primary actions) */
+  --color-accent: #3d202b;
+  --color-accent-soft: #c29cac;
+
+  /* Card color variants — each pairs a background with its own foreground text
+     color, tuned per-swatch for contrast rather than one fixed ink color. */
+  --color-wasabi: #e0e939;
+  --color-wasabi-fg: #484800;
+  --color-cool-blue: #ceeaf5;
+  --color-cool-blue-fg: #32586a;
+  --color-sage: #adb9a2;
+  --color-sage-fg: #2f3a27;
+  --color-orange: #ff663a;
+  --color-orange-fg: #841200;
+
+  /* Type */
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --radius-card: 24px;
+  --radius-photo: 16px;
+  --radius-pill: 9999px;
+  --radius-tabbar: 30px;
+
+  /* One-off spacings that don't line up with the default 4px scale */
+  --spacing-screen-x: 18px;
+  --spacing-header-x: 22px;
+  --spacing-tabbar-x: 14px;
+
+  /* Elevation */
+  --shadow-float: 0px 10px 17px rgba(20, 22, 26, 0.13), 0px 2px 3px rgba(20, 22, 26, 0.05);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+}
