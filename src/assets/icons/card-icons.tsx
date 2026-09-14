@@ -31,3 +31,36 @@ export function PinButtonIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+/** Header "add" button glyph (drank file, node 1614:1395 on the cards-1 frame
+ * — labeled "btn-profile" in Figma but visually a plus sign, the actual add
+ * affordance; the circle Figma names "btn-add" renders a filter/sort glyph
+ * with no defined behavior yet, so it's not built this session). currentColor
+ * so it can sit on either an ink or surface button background. */
+export function PlusIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M8.5 3.5411V13.4589M3.5411 8.5H13.4589"
+        stroke="currentColor"
+        strokeWidth="1.42"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/** Back/close chevron (drank file, node 1614:1656 "btn-close" on the cards-3
+ * detail frame). currentColor, same reasoning as PlusIcon. */
+export function BackChevronIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M9.9161 4.25L5.6661 8.5L9.9161 12.75"
+        stroke="currentColor"
+        strokeWidth="1.42"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}

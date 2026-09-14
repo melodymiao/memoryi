@@ -11,7 +11,11 @@ import { PinButtonIcon, PinGlyphIcon } from "../../assets/icons/card-icons"
 
 export type CardColorName = "wasabi" | "coolBlue" | "sage" | "orange"
 
-const colorClasses: Record<CardColorName, { bg: string; fg: string }> = {
+/** bg/fg Tailwind class pairs per variant — exported so screens that need a
+ * card-colored block outside this component (e.g. the detail screen's hero,
+ * which needs a larger title than Card's fixed size) can reuse the same
+ * tokens instead of duplicating the mapping. */
+export const cardColorClasses: Record<CardColorName, { bg: string; fg: string }> = {
   wasabi: { bg: "bg-wasabi", fg: "text-wasabi-fg" },
   coolBlue: { bg: "bg-cool-blue", fg: "text-cool-blue-fg" },
   sage: { bg: "bg-sage", fg: "text-sage-fg" },
@@ -55,7 +59,7 @@ export function Card({
   className,
   children,
 }: CardProps) {
-  const { bg, fg } = colorClasses[color]
+  const { bg, fg } = cardColorClasses[color]
 
   return (
     <div
