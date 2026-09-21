@@ -4,7 +4,7 @@ import { BackChevronIcon } from "../assets/icons/card-icons"
 import { cardColorClasses } from "../components/Card"
 import { CardForm, type CardFormSubmit } from "../components/CardForm"
 import { deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards"
-import { cardColorForId } from "../lib/cardColor"
+import { cardColorFor } from "../lib/cardColor"
 import { cardBadges, isCategorySlug } from "../lib/categories"
 import { linkHost, safeHref } from "../lib/links"
 import { getEntryPhotoUrl } from "../lib/photos"
@@ -198,7 +198,7 @@ function CardDetailView({
   onDeleteClick: () => void
   actionError: string | null
 }) {
-  const { bg, fg } = cardColorClasses[cardColorForId(card.id)]
+  const { bg, fg } = cardColorClasses[cardColorFor(card)]
   const badges = cardBadges(card)
 
   return (

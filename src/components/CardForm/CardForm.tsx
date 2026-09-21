@@ -3,6 +3,7 @@ import { LinkIcon, PersonIcon, ScreenshotIcon } from "../../assets/icons/source-
 import { CategoryPicker } from "../CategoryPicker"
 import { newSessionToken, getPlaceDetails, placesEnabled, type PlaceSuggestion } from "../../lib/places"
 import { usePlaceSuggestions } from "../../lib/usePlaceSuggestions"
+import { categoriesFromPlaceTypes } from "../../lib/placeTypes"
 import type { CategorySlug } from "../../lib/categories"
 import { normalizeLink } from "../../lib/links"
 import { getEntryPhotoUrl } from "../../lib/photos"
@@ -145,6 +146,8 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
   const hasScreenshot = Boolean(screenshotFile || screenshotPath)
   const [titleError, setTitleError] = useState(false)
   const [categoryError, setCategoryError] = useState(false)
+  // Once the user picks categories themselves, place autofill stops overriding them.
+  const categoriesTouchedRef = useRef(initialValues.categories.length > 0)
   const [locationError, setLocationError] = useState(false)
 
   // Autocomplete: suggestions show while the title is being typed. Picking one
@@ -172,6 +175,11 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       // Autofill Type and Price when Google has them; both stay editable.
       if (details.type) setTypesText(details.type)
       if (details.priceLevel !== null) setPriceLevel(details.priceLevel)
+      const suggested = categoriesFromPlaceTypes(details.placeTypes)
+      if (suggested.length > 0 && !categoriesTouchedRef.current) {
+        setCategories(suggested)
+        setCategoryError(false)
+      }
     } catch (err) {
       // Keep the suggestion's address line; neighborhood stays editable by hand.
       console.warn(err)
@@ -316,6 +324,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         <CategoryPicker
           value={categories}
           onChange={(next) => {
+            categoriesTouchedRef.current = true
             setCategories(next)
             if (categoryError) setCategoryError(false)
           }}

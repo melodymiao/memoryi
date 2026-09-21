@@ -73,16 +73,37 @@ export function priceLabel(level: number | null): string | null {
 
 /** Small labels shown on a card: its categories (or legacy text), then specific
  * types, price, neighborhood, and any legacy free-text tags. */
-export function cardBadges(card: {
-  categories: string[]
-  category: string | null
-  types: string[]
-  price_level: number | null
-  neighborhood: string | null
-  tags: string[]
-}): string[] {
+/** "Food, Entertainment, +1 more" — categories collapsed into one label. */
+export function categorySummary(categories: string[], visible = 2): string | null {
+  const labels = categories
+    .map(getCategory)
+    .filter((d): d is CategoryDef => d !== undefined)
+    .map((d) => d.label)
+  if (labels.length === 0) return null
+  const shown = labels.slice(0, visible)
+  const rest = labels.length - shown.length
+  return rest > 0 ? `${shown.join(", ")}, +${rest} more` : shown.join(", ")
+}
+
+/** Badges for a card. With `collapseCategories` (list cards) the categories
+ * become one "Food, Entertainment, +1 more" badge; otherwise each gets its own
+ * (detail screen). */
+export function cardBadges(
+  card: {
+    categories: string[]
+    category: string | null
+    types: string[]
+    price_level: number | null
+    neighborhood: string | null
+    tags: string[]
+  },
+  { collapseCategories = false }: { collapseCategories?: boolean } = {},
+): string[] {
+  const categoryBadges = collapseCategories
+    ? [categorySummary(card.categories) ?? card.category].filter((b): b is string => Boolean(b))
+    : cardCategoryBadges(card)
   return [
-    ...cardCategoryBadges(card),
+    ...categoryBadges,
     ...card.types,
     ...[priceLabel(card.price_level), card.neighborhood].filter((b): b is string => Boolean(b)),
     ...card.tags,

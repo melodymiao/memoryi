@@ -1,4 +1,5 @@
 import type { CardColorName } from "../components/Card"
+import { categoryColor, isCategorySlug } from "./categories"
 
 const ORDER: CardColorName[] = ["wasabi", "coolBlue", "sage", "orange"]
 
@@ -10,4 +11,11 @@ export function cardColorForId(id: string): CardColorName {
     hash = (hash * 31 + id.charCodeAt(i)) | 0
   }
   return ORDER[Math.abs(hash) % ORDER.length]
+}
+
+/** A card takes the color of its first category (Food → orange, Nature →
+ * sage, ...); cards with no category fall back to the id-based color. */
+export function cardColorFor(card: { id: string; categories: string[] }): CardColorName {
+  const first = card.categories.find(isCategorySlug)
+  return first ? categoryColor[first] : cardColorForId(card.id)
 }

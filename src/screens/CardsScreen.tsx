@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { PlusIcon } from "../assets/icons/card-icons"
 import { Card } from "../components/Card"
 import { useCards } from "../data/cards"
-import { cardColorForId } from "../lib/cardColor"
+import { cardColorFor } from "../lib/cardColor"
 import { CATEGORIES, cardBadges, selectedCategoryChipClass, type CategorySlug } from "../lib/categories"
 import type { CardStatus } from "../types/database"
 
@@ -171,8 +171,8 @@ export function CardsScreen() {
             <Card
               key={card.id}
               title={card.title}
-              badges={cardBadges(card)}
-              color={cardColorForId(card.id)}
+              badges={cardBadges(card, { collapseCategories: true })}
+              color={cardColorFor(card)}
               onClick={() => navigate(`/cards/${card.id}`)}
             />
           ))}

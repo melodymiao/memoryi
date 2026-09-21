@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import sql from "../../../supabase/migrations/20260921120000_card_categories.sql?raw"
-import { CATEGORIES, CATEGORY_SLUGS, cardBadges, cardCategoryBadges, isCategorySlug, priceLabel } from "../categories"
+import { CATEGORIES, CATEGORY_SLUGS, cardBadges, cardCategoryBadges, categorySummary, isCategorySlug, priceLabel } from "../categories"
 
 describe("categories", () => {
   it("defines exactly the twelve fixed categories, each once", () => {
@@ -42,5 +42,29 @@ describe("categories", () => {
     expect(priceLabel(4)).toBe("$$$$")
     expect(priceLabel(null)).toBeNull()
     expect(priceLabel(0)).toBeNull()
+  })
+
+  it("collapses categories into one badge on list cards", () => {
+    const card = {
+      categories: ["food", "entertainment", "shopping"],
+      category: null,
+      types: ["omakase"],
+      price_level: 2,
+      neighborhood: "Little Tokyo",
+      tags: [],
+    }
+    expect(cardBadges(card, { collapseCategories: true })).toEqual([
+      "Food, Entertainment, +1 more",
+      "omakase",
+      "$$",
+      "Little Tokyo",
+    ])
+  })
+
+  it("summarizes categories", () => {
+    expect(categorySummary(["food"])).toBe("Food")
+    expect(categorySummary(["food", "cafe"])).toBe("Food, Cafe")
+    expect(categorySummary(["food", "cafe", "bars", "dessert"])).toBe("Food, Cafe, +2 more")
+    expect(categorySummary([])).toBeNull()
   })
 })
