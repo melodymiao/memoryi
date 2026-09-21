@@ -7,6 +7,7 @@ import { deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards
 import { cardColorFor } from "../lib/cardColor"
 import { cardBadges, isCategorySlug } from "../lib/categories"
 import { linkHost, safeHref } from "../lib/links"
+import { mapsUrl } from "../lib/maps"
 import { getEntryPhotoUrl } from "../lib/photos"
 import { LinkIcon, ScreenshotIcon } from "../assets/icons/source-icons"
 import type { Card } from "../types/database"
@@ -215,6 +216,21 @@ function CardDetailView({
           </div>
         )}
       </div>
+
+      {card.address && (
+        <a
+          href={mapsUrl({ placeId: card.place_id, name: card.title, address: card.address }) ?? undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-card bg-surface px-4 py-3.5"
+        >
+          <span aria-hidden className="text-[15px]">
+            📍
+          </span>
+          <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink underline decoration-ink-soft/50">{card.address}</span>
+          <span className="shrink-0 text-[11px] font-bold text-ink-soft">open in maps</span>
+        </a>
+      )}
 
       {card.notes && (
         <div>

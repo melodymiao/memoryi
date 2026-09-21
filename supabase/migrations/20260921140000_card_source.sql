@@ -9,3 +9,7 @@ alter table cards
   add column if not exists source_person text,
   add column if not exists source_link text,
   add column if not exists source_screenshot text;
+
+-- Make PostgREST pick up the new columns immediately (otherwise saves can fail
+-- with "Could not find the '...' column of 'cards' in the schema cache").
+notify pgrst, 'reload schema';

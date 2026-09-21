@@ -35,6 +35,8 @@ export interface PlaceDetails {
   type: string
   /** Google type identifiers, primary type first (see placeTypes.ts). */
   placeTypes: string[]
+  /** City / neighborhood names for this place, used to trim them off titles. */
+  areaNames: string[]
 }
 
 export function newSessionToken(): string {
@@ -123,6 +125,39 @@ export function pickNeighborhood(components: AddressComponent[] = []): string {
 // then stops).
 const DETAILS_FIELDS = "id,displayName,formattedAddress,addressComponents,priceLevel,primaryTypeDisplayName,primaryType,types"
 
+/** Names of the neighborhood / sub-area / city parts of an address. */
+export function areaNamesOf(components: AddressComponent[] = []): string[] {
+  const names = new Set<string>()
+  for (const c of components) {
+    if (AREA_TYPES.some((t) => c.types.includes(t))) names.add(c.longText)
+  }
+  return [...names]
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+/** Drops a trailing city/neighborhood from a business name — "Din Tai Fung -
+ * Arcadia", "Blue Bottle (Hayes Valley)" or "Nobu Malibu" — when it matches one
+ * of the place's own area names. Only trailing, whole-word matches are
+ * removed, and a name that would end up empty is left alone. */
+export function stripAreaFromName(name: string, areas: string[]): string {
+  const cleaned = areas.map((a) => a.trim()).filter(Boolean)
+  if (cleaned.length === 0) return name
+  const alternatives = cleaned.sort((a, b) => b.length - a.length).map(escapeRegExp).join("|")
+  // separator (dash, comma, pipe, "at", "in", "(" or just a space) + area + optional ")"
+  const trailing = new RegExp(`(?:\\s*[-–—|,:·]\\s*|\\s+\\(|\\s+(?:at|in)\\s+|\\s+)(?:${alternatives})\\)?\\s*$`, "i")
+
+  let result = name.trim()
+  for (let i = 0; i < 3; i++) {
+    const next = result.replace(trailing, "").replace(/[\s\-–—|,:·(]+$/, "")
+    if (next === result || next.length < 2) break
+    result = next
+  }
+  return result
+}
+
 export async function getPlaceDetails(
   placeId: string,
   sessionToken: string,
@@ -143,6 +178,7 @@ export async function getPlaceDetails(
     neighborhood: pickNeighborhood(data.addressComponents),
     priceLevel: priceLevelFromGoogle(data.priceLevel),
     type: data.primaryTypeDisplayName?.text ?? "",
+    areaNames: areaNamesOf(data.addressComponents),
     placeTypes: [...new Set([data.primaryType, ...(data.types ?? [])].filter((t): t is string => Boolean(t)))],
   }
 }

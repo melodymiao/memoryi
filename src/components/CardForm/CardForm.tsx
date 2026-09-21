@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import { LinkIcon, PersonIcon, ScreenshotIcon } from "../../assets/icons/source-icons"
 import { CategoryPicker } from "../CategoryPicker"
-import { newSessionToken, getPlaceDetails, placesEnabled, type PlaceSuggestion } from "../../lib/places"
+import { newSessionToken, getPlaceDetails, placesEnabled, stripAreaFromName, type PlaceSuggestion } from "../../lib/places"
+import { mapsUrl } from "../../lib/maps"
 import { usePlaceSuggestions } from "../../lib/usePlaceSuggestions"
 import { categoriesFromPlaceTypes } from "../../lib/placeTypes"
 import type { CategorySlug } from "../../lib/categories"
@@ -171,6 +172,9 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
     try {
       const details = await getPlaceDetails(s.placeId, sessionTokenRef.current)
       setAddress(details.address || s.secondary)
+      // Drop a trailing city/neighborhood from the name (the location field and
+      // address carry it); skip if the title was edited in the meantime.
+      setTitle((current) => (current === s.name ? stripAreaFromName(s.name, details.areaNames) : current))
       setNeighborhood(details.neighborhood)
       // Autofill Type and Price when Google has them; both stay editable.
       if (details.type) setTypesText(details.type)
@@ -268,7 +272,14 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         {titleError && <p className="text-xs text-red-600">Title is required.</p>}
         {placeId && address && (
           <p className="text-[11px] text-ink-soft">
-            📍 {address}
+            <a
+              href={mapsUrl({ placeId, name: title, address }) ?? undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              📍 {address}
+            </a>
             {resolving ? " …" : ""}
           </p>
         )}
