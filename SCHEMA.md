@@ -37,7 +37,10 @@ home, entertainment, nature, culture, travel, active, events; enforced by a
 check constraint, defined in `src/lib/categories.ts`), `status` (`wishlist` |
 `visited`), `notes`, and place details: `place_id` (Google Places id),
 `address`, `neighborhood`, `price_level` (1–4 for $–$$$$), `types` (specific
-kinds, e.g. `{omakase}` — separate from the fixed `categories`),
+kinds, e.g. `{omakase}` — separate from the fixed `categories`), and where
+the recommendation came from: `source_person`, `source_link`,
+`source_screenshot` (storage path in `entry-photos` under
+`<space_id>/card-sources/`; any combination may be set),
 `created_by`, `created_at`. The old free-text `category` and `tags` columns
 are kept for legacy rows but no longer written.
 

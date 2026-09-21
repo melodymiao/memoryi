@@ -42,6 +42,12 @@ export interface Card {
   neighborhood: string | null
   /** 1–4 for $–$$$$. */
   price_level: number | null
+  /** Who told you about it. */
+  source_person: string | null
+  /** http(s) link the recommendation came from. */
+  source_link: string | null
+  /** Storage path (entry-photos bucket) of a screenshot of the recommendation. */
+  source_screenshot: string | null
   /** Specific kinds of place, e.g. ["omakase"] — separate from `categories`. */
   types: string[]
   created_by: string

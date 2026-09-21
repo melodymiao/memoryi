@@ -27,6 +27,9 @@ const fixtureCard = {
   neighborhood: "Little Tokyo",
   price_level: 3,
   types: ["omakase"],
+  source_person: "Jenny",
+  source_link: "https://example.com/sushi-gen",
+  source_screenshot: null,
   created_by: USER_ID,
   created_at: "2026-01-01T00:00:00.000Z",
 }
@@ -69,6 +72,8 @@ describe("createCard", () => {
       neighborhood: "Little Tokyo",
       address: "422 E 2nd St, Los Angeles, CA",
       placeId: "place-1",
+      sourcePerson: "Jenny",
+      sourceLink: "https://example.com/sushi-gen",
     })
 
     expect(query.insert).toHaveBeenCalledWith({
@@ -81,6 +86,9 @@ describe("createCard", () => {
       neighborhood: "Little Tokyo",
       price_level: 3,
       types: ["omakase"],
+      source_person: "Jenny",
+      source_link: "https://example.com/sushi-gen",
+      source_screenshot: null,
       status: undefined,
       created_by: USER_ID,
     })
@@ -137,6 +145,9 @@ describe("updateCard", () => {
       neighborhood: "Little Tokyo",
       priceLevel: 3,
       types: ["omakase"],
+      sourcePerson: "Jenny",
+      sourceLink: "https://example.com/sushi-gen",
+      sourceScreenshot: null,
     })
 
     expect(query.update).toHaveBeenCalledWith({
@@ -148,6 +159,9 @@ describe("updateCard", () => {
       neighborhood: "Little Tokyo",
       price_level: 3,
       types: ["omakase"],
+      source_person: "Jenny",
+      source_link: "https://example.com/sushi-gen",
+      source_screenshot: null,
     })
     expect(query.eq).toHaveBeenCalledWith("id", "card-1")
     expect(result).toEqual(updated)

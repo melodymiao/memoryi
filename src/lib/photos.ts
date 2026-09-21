@@ -37,3 +37,16 @@ export async function deleteEntryPhoto(path: string): Promise<void> {
   const { error } = await supabase.storage.from(BUCKET).remove([path])
   if (error) throw error
 }
+
+/** Uploads a screenshot showing where a card's recommendation came from and
+ * returns its Storage path (what goes in `cards.source_screenshot`). Lives in
+ * the same bucket as entry photos, under "<space_id>/card-sources/". */
+export async function uploadCardSourceScreenshot(spaceId: string, file: File): Promise<string> {
+  const path = `${spaceId}/card-sources/${crypto.randomUUID()}${extensionOf(file.name)}`
+  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  })
+  if (error) throw error
+  return path
+}

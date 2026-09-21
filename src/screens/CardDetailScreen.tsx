@@ -6,6 +6,9 @@ import { CardForm, type CardFormSubmit } from "../components/CardForm"
 import { deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards"
 import { cardColorForId } from "../lib/cardColor"
 import { cardBadges, isCategorySlug } from "../lib/categories"
+import { linkHost, safeHref } from "../lib/links"
+import { getEntryPhotoUrl } from "../lib/photos"
+import { LinkIcon, ScreenshotIcon } from "../assets/icons/source-icons"
 import type { Card } from "../types/database"
 
 const DELETE_CONFIRM_WINDOW_MS = 3000
@@ -66,7 +69,8 @@ export function CardDetailScreen() {
     setSavingEdit(true)
     setActionError(null)
     try {
-      const updated = await updateCard(card.id, values)
+      const { sourceScreenshotFile, ...rest } = values
+      const updated = await updateCard(card.id, { ...rest, sourceScreenshotFile: sourceScreenshotFile ?? undefined })
       setCard(updated)
       setEditing(false)
     } catch (err) {
@@ -158,6 +162,9 @@ export function CardDetailScreen() {
                 neighborhood: card.neighborhood ?? "",
                 address: card.address ?? "",
                 placeId: card.place_id,
+                sourcePerson: card.source_person ?? "",
+                sourceLink: card.source_link ?? "",
+                sourceScreenshot: card.source_screenshot,
               }}
               submitLabel="save"
               submitting={savingEdit}
@@ -216,6 +223,8 @@ function CardDetailView({
         </div>
       )}
 
+      <SourceBlock card={card} />
+
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
 
       <div className="flex flex-col gap-2">
@@ -223,7 +232,7 @@ function CardDetailView({
           type="button"
           onClick={onToggleStatus}
           disabled={togglingStatus}
-          className="w-full rounded-pill bg-ink py-4 text-[13.5px] font-bold text-background disabled:opacity-60"
+          className="w-full rounded-pill bg-accent py-4 text-[13.5px] font-bold text-accent-soft disabled:opacity-60"
         >
           {togglingStatus ? "updating..." : card.status === "wishlist" ? "mark as visited" : "mark as wishlist"}
         </button>
@@ -237,6 +246,99 @@ function CardDetailView({
         >
           {deleting ? "deleting..." : deleteArmed ? "tap again to delete" : "delete card"}
         </button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * "where this came from" — Figma cards-3 source-attribution-block (node
+ * 1630:6587): a rounded row with an initial avatar, "<name> told us about it",
+ * "added <month year>", and a chevron when there's a link to open. Any
+ * combination of person / link / screenshot may be present; the screenshot
+ * shows below the row. Renders nothing when the card has no source.
+ */
+function SourceBlock({ card }: { card: Card }) {
+  const href = safeHref(card.source_link)
+  const person = card.source_person?.trim() || null
+  const screenshotPath = card.source_screenshot
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!screenshotPath) {
+      setScreenshotUrl(null)
+      return
+    }
+    let cancelled = false
+    getEntryPhotoUrl(screenshotPath)
+      .then((url) => {
+        if (!cancelled) setScreenshotUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setScreenshotUrl(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [screenshotPath])
+
+  if (!person && !href && !screenshotPath) return null
+
+  const added = new Date(card.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+  const headline = person ? `${person} told us about it` : href ? linkHost(href) : "from a screenshot"
+  const Avatar = person ? null : href ? LinkIcon : ScreenshotIcon
+
+  const row = (
+    <>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft/40 text-[14px] font-bold text-accent">
+        {Avatar ? <Avatar className="size-4" /> : person!.charAt(0).toLowerCase()}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[14px] font-bold text-ink">{headline}</span>
+        <span className="text-[11.5px] text-ink-soft">added {added.toLowerCase()}</span>
+      </span>
+      {href && (
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 text-ink-soft">
+          <path d="m6 3 5 5-5 5" />
+        </svg>
+      )}
+    </>
+  )
+  const rowClass = "flex items-center gap-3 rounded-card bg-surface px-4 py-3.5"
+
+  return (
+    <div>
+      <p className="font-display text-[15px] font-bold text-ink">where this came from</p>
+      <div className="mt-3 flex flex-col gap-3">
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className={rowClass}>
+            {row}
+          </a>
+        ) : (
+          <div className={rowClass}>{row}</div>
+        )}
+
+        {person && href && (
+          <p className="flex items-center gap-1.5 px-1 text-[11.5px] text-ink-soft">
+            <LinkIcon className="size-3.5" />
+            {linkHost(href)}
+          </p>
+        )}
+        {screenshotPath && (
+          <div className="flex flex-col gap-1.5">
+            <p className="flex items-center gap-1.5 px-1 text-[11.5px] text-ink-soft">
+              <ScreenshotIcon className="size-3.5" />
+              screenshot
+            </p>
+            {screenshotUrl ? (
+              <a href={screenshotUrl} target="_blank" rel="noopener noreferrer">
+                <img src={screenshotUrl} alt="Screenshot of the recommendation" className="max-h-80 w-full rounded-photo object-cover object-top" />
+              </a>
+            ) : (
+              <div className="h-40 w-full rounded-photo bg-surface" />
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

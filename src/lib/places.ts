@@ -29,6 +29,10 @@ export interface PlaceDetails {
   address: string
   /** Neighborhood if Google has one, else the sub-area or city. */
   neighborhood: string
+  /** 1–4 for $–$$$$, or null when Google has no price info. */
+  priceLevel: number | null
+  /** Google's specific type, e.g. "Sushi restaurant"; empty if unknown. */
+  type: string
 }
 
 export function newSessionToken(): string {
@@ -83,6 +87,20 @@ interface DetailsResponse {
   displayName?: { text: string }
   formattedAddress?: string
   addressComponents?: AddressComponent[]
+  priceLevel?: string
+  primaryTypeDisplayName?: { text: string }
+}
+
+const PRICE_LEVELS: Record<string, number> = {
+  PRICE_LEVEL_INEXPENSIVE: 1,
+  PRICE_LEVEL_MODERATE: 2,
+  PRICE_LEVEL_EXPENSIVE: 3,
+  PRICE_LEVEL_VERY_EXPENSIVE: 4,
+}
+
+/** Google's price-level enum → 1–4 (free / unspecified → null). */
+export function priceLevelFromGoogle(level: string | undefined): number | null {
+  return (level && PRICE_LEVELS[level]) || null
 }
 
 const AREA_TYPES = ["neighborhood", "sublocality_level_1", "sublocality", "locality"]
@@ -96,9 +114,10 @@ export function pickNeighborhood(components: AddressComponent[] = []): string {
   return ""
 }
 
-// Address fields only (cheapest tier). Price level and place types are a
-// costlier tier — add them to this mask when wiring up price/type autofill.
-const DETAILS_FIELDS = "id,displayName,formattedAddress,addressComponents"
+// priceLevel and primaryTypeDisplayName are in Google's higher-priced field
+// tiers; drop them from this mask to make lookups cheaper (price/type autofill
+// then stops).
+const DETAILS_FIELDS = "id,displayName,formattedAddress,addressComponents,priceLevel,primaryTypeDisplayName"
 
 export async function getPlaceDetails(
   placeId: string,
@@ -118,5 +137,7 @@ export async function getPlaceDetails(
     name: data.displayName?.text ?? "",
     address: data.formattedAddress ?? "",
     neighborhood: pickNeighborhood(data.addressComponents),
+    priceLevel: priceLevelFromGoogle(data.priceLevel),
+    type: data.primaryTypeDisplayName?.text ?? "",
   }
 }

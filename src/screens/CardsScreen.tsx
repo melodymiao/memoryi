@@ -4,12 +4,12 @@ import { PlusIcon } from "../assets/icons/card-icons"
 import { Card } from "../components/Card"
 import { useCards } from "../data/cards"
 import { cardColorForId } from "../lib/cardColor"
-import { CATEGORIES, cardBadges, groupChipClasses, type CategorySlug } from "../lib/categories"
+import { CATEGORIES, cardBadges, type CategorySlug } from "../lib/categories"
 import type { CardStatus } from "../types/database"
 
 /**
  * Figma (drank file, cards-1 frame, node 1614:1386) covers the header + the
- * vertical card list. The single filter row (All · Visited dropdown | fixed
+ * vertical card list. The single filter row (visit-type dropdown | fixed
  * category chips), the empty state, and the header's icon aren't in the frame.
  * The real "add card" button is the dark plus circle Figma labels
  * "btn-profile".
@@ -25,45 +25,35 @@ const chipBase = "shrink-0 rounded-pill px-3.5 py-2 text-[11.5px] font-semibold"
 export function CardsScreen() {
   const { cards, loading, error } = useCards()
   const navigate = useNavigate()
-  // Both statuses on by default so visited + unvisited cards show together.
-  const [statuses, setStatuses] = useState<CardStatus[]>(["visited", "wishlist"])
+  // Empty selection = no visit-type filter (visited + unvisited shown together).
+  const [statuses, setStatuses] = useState<CardStatus[]>([])
   const [selectedCategories, setSelectedCategories] = useState<CategorySlug[]>([])
   const [statusMenuOpen, setStatusMenuOpen] = useState(false)
-
-  const allStatuses = statuses.length === STATUS_OPTIONS.length
-  const isDefaultFilter = allStatuses && selectedCategories.length === 0
 
   const filteredCards = useMemo(
     () =>
       cards.filter(
         (card) =>
-          statuses.includes(card.status) &&
+          (statuses.length === 0 || statuses.includes(card.status)) &&
           (selectedCategories.length === 0 || selectedCategories.some((cat) => card.categories.includes(cat))),
       ),
     [cards, statuses, selectedCategories],
   )
 
   function toggleStatus(value: CardStatus) {
-    setStatuses((prev) => {
-      if (!prev.includes(value)) return [...prev, value]
-      // Keep at least one checked — an empty selection would hide every card.
-      return prev.length > 1 ? prev.filter((v) => v !== value) : prev
-    })
+    setStatuses((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]))
   }
 
   function toggleCategory(slug: CategorySlug) {
     setSelectedCategories((prev) => (prev.includes(slug) ? prev.filter((c) => c !== slug) : [...prev, slug]))
   }
 
-  function resetFilters() {
-    setStatuses(["visited", "wishlist"])
-    setSelectedCategories([])
-    setStatusMenuOpen(false)
-  }
-
-  const statusLabel = allStatuses
-    ? "Visited"
-    : (STATUS_OPTIONS.find((o) => o.value === statuses[0])?.label ?? "Visited")
+  const statusActive = statuses.length > 0
+  const statusLabel = statusActive
+    ? STATUS_OPTIONS.filter((o) => statuses.includes(o.value))
+        .map((o) => o.label)
+        .join(", ")
+    : "Visit type"
 
   return (
     <div className="pt-4">
@@ -72,37 +62,47 @@ export function CardsScreen() {
         <Link
           to="/cards/new"
           aria-label="Add card"
-          className="flex size-[38px] items-center justify-center rounded-pill bg-ink text-background"
+          className="flex size-[38px] items-center justify-center rounded-pill bg-accent text-accent-soft"
         >
           <PlusIcon className="size-[17px]" />
         </Link>
       </div>
 
       <div className="relative flex items-center gap-2 px-header-x pt-4 pb-4">
-        <button
-          type="button"
-          onClick={resetFilters}
-          aria-pressed={isDefaultFilter}
-          className={`${chipBase} ${isDefaultFilter ? "bg-ink text-background" : "bg-surface text-ink-soft"}`}
-        >
-          All
-        </button>
-
         <div className="relative shrink-0">
-          <button
-            type="button"
-            aria-haspopup="true"
-            aria-expanded={statusMenuOpen}
-            onClick={() => setStatusMenuOpen((open) => !open)}
-            className={`${chipBase} ${allStatuses ? "bg-surface text-ink" : "bg-ink text-background"}`}
+          <div
+            className={`flex items-center rounded-pill text-[11.5px] font-semibold ${
+              statusActive ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"
+            }`}
           >
-            {statusLabel} <span aria-hidden>▾</span>
-          </button>
+            <button
+              type="button"
+              aria-haspopup="true"
+              aria-expanded={statusMenuOpen}
+              onClick={() => setStatusMenuOpen((open) => !open)}
+              className={`py-2 pl-3.5 ${statusActive ? "pr-1.5" : "pr-3.5"}`}
+            >
+              {statusLabel} <span aria-hidden>▾</span>
+            </button>
+            {statusActive && (
+              <button
+                type="button"
+                aria-label="Clear visit type"
+                onClick={() => {
+                  setStatuses([])
+                  setStatusMenuOpen(false)
+                }}
+                className="py-2 pr-3 pl-1"
+              >
+                <span aria-hidden>✕</span>
+              </button>
+            )}
+          </div>
           {statusMenuOpen && (
             <>
               <button
                 type="button"
-                aria-label="Close status filter"
+                aria-label="Close visit type filter"
                 onClick={() => setStatusMenuOpen(false)}
                 className="fixed inset-0 z-20 cursor-default"
               />
@@ -116,7 +116,7 @@ export function CardsScreen() {
                       type="checkbox"
                       checked={statuses.includes(opt.value)}
                       onChange={() => toggleStatus(opt.value)}
-                      className="size-4 accent-ink"
+                      className="size-4 accent-accent"
                     />
                     {opt.label}
                   </label>
@@ -134,14 +134,13 @@ export function CardsScreen() {
         >
           {CATEGORIES.map((cat) => {
             const selected = selectedCategories.includes(cat.slug)
-            const classes = groupChipClasses[cat.group]
             return (
               <button
                 key={cat.slug}
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggleCategory(cat.slug)}
-                className={`${chipBase} ${selected ? classes.active : classes.idle}`}
+                className={`${chipBase} ${selected ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"}`}
               >
                 <span aria-hidden>{cat.emoji}</span> {cat.label}
               </button>

@@ -28,6 +28,9 @@ export function AddCardScreen() {
         neighborhood: values.neighborhood ?? undefined,
         address: values.address ?? undefined,
         placeId: values.placeId ?? undefined,
+        sourcePerson: values.sourcePerson ?? undefined,
+        sourceLink: values.sourceLink ?? undefined,
+        sourceScreenshotFile: values.sourceScreenshotFile ?? undefined,
       })
       navigate("/cards")
     } catch (err) {
@@ -62,6 +65,9 @@ export function AddCardScreen() {
             neighborhood: "",
             address: "",
             placeId: null,
+            sourcePerson: "",
+            sourceLink: "",
+            sourceScreenshot: null,
             notes: "",
           }}
           submitLabel="add card"

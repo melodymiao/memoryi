@@ -36,7 +36,7 @@ export function TabBar() {
               <>
                 <span
                   className={`flex size-10 items-center justify-center rounded-pill ${
-                    isActive ? "bg-ink text-background" : "text-ink-soft"
+                    isActive ? "bg-accent text-accent-soft" : "text-ink-soft"
                   }`}
                 >
                   <Icon className="size-5" />

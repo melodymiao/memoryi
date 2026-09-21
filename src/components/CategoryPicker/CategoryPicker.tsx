@@ -1,4 +1,4 @@
-import { CATEGORIES, groupChipClasses, type CategorySlug } from "../../lib/categories"
+import { CATEGORIES, type CategorySlug } from "../../lib/categories"
 
 export interface CategoryPickerProps {
   value: CategorySlug[]
@@ -15,7 +15,6 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
     <div className="flex flex-wrap gap-2">
       {CATEGORIES.map((cat) => {
         const selected = value.includes(cat.slug)
-        const classes = groupChipClasses[cat.group]
         return (
           <button
             key={cat.slug}
@@ -23,7 +22,9 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
             aria-pressed={selected}
             title={cat.description}
             onClick={() => toggle(cat.slug)}
-            className={`rounded-pill px-3.5 py-2 text-[12px] font-semibold ${selected ? classes.active : classes.idle}`}
+            className={`rounded-pill px-3.5 py-2 text-[12px] ${
+              selected ? "bg-accent font-bold text-accent-soft" : "bg-surface font-semibold text-ink-soft"
+            }`}
           >
             <span aria-hidden>{cat.emoji}</span> {cat.label}
           </button>

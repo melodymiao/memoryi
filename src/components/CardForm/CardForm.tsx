@@ -1,8 +1,11 @@
-import { useRef, useState, type FormEvent } from "react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
+import { LinkIcon, PersonIcon, ScreenshotIcon } from "../../assets/icons/source-icons"
 import { CategoryPicker } from "../CategoryPicker"
 import { newSessionToken, getPlaceDetails, placesEnabled, type PlaceSuggestion } from "../../lib/places"
 import { usePlaceSuggestions } from "../../lib/usePlaceSuggestions"
 import type { CategorySlug } from "../../lib/categories"
+import { normalizeLink } from "../../lib/links"
+import { getEntryPhotoUrl } from "../../lib/photos"
 
 /**
  * Shared card fields — used by both the add-card screen and the inline edit
@@ -11,9 +14,10 @@ import type { CategorySlug } from "../../lib/categories"
  * form) — field styling reuses existing tokens (`surface`, `radius-photo`,
  * `radius-pill`) rather than inventing new ones, per THEME.md.
  *
- * Fields: title (with Google Places suggestions), fixed multi-select
- * categories, then the finer details — Type, Price, Location — as separate
- * inputs, then notes.
+ * Fields: title (with Google Places suggestions that autofill Type, Price and
+ * Location), fixed multi-select categories, the finer details — Type, Price,
+ * Location — as separate inputs, where the recommendation came from (a
+ * screenshot, a link and/or a person), then notes.
  */
 
 export interface CardFormValues {
@@ -27,6 +31,10 @@ export interface CardFormValues {
   neighborhood: string
   address: string
   placeId: string | null
+  sourcePerson: string
+  sourceLink: string
+  /** Existing screenshot's storage path, if any. */
+  sourceScreenshot: string | null
   notes: string
 }
 
@@ -38,6 +46,12 @@ export interface CardFormSubmit {
   neighborhood: string | null
   address: string | null
   placeId: string | null
+  sourcePerson: string | null
+  sourceLink: string | null
+  /** Existing screenshot path to keep (null if none or removed). */
+  sourceScreenshot: string | null
+  /** A newly chosen screenshot to upload. */
+  sourceScreenshotFile: File | null
   notes: string | null
 }
 
@@ -54,6 +68,12 @@ const inputClass =
 const labelClass = "text-[10px] font-bold tracking-[0.6px] text-ink-soft uppercase"
 
 const PRICE_LEVELS = [1, 2, 3, 4] as const
+const MAX_SCREENSHOT_BYTES = 15 * 1024 * 1024 // matches the storage bucket limit
+
+const chipClass = (active: boolean) =>
+  `flex items-center gap-1.5 rounded-pill px-3.5 py-2 text-[12px] ${
+    active ? "bg-accent font-bold text-accent-soft" : "bg-surface font-semibold text-ink-soft"
+  }`
 
 export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submitting = false }: CardFormProps) {
   const [title, setTitle] = useState(initialValues.title)
@@ -64,6 +84,65 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
   const [address, setAddress] = useState(initialValues.address)
   const [placeId, setPlaceId] = useState<string | null>(initialValues.placeId)
   const [notes, setNotes] = useState(initialValues.notes)
+
+  // Source: any combination of a person, a link and a screenshot.
+  const [showPerson, setShowPerson] = useState(Boolean(initialValues.sourcePerson))
+  const [sourcePerson, setSourcePerson] = useState(initialValues.sourcePerson)
+  const [showLink, setShowLink] = useState(Boolean(initialValues.sourceLink))
+  const [sourceLink, setSourceLink] = useState(initialValues.sourceLink)
+  const [linkError, setLinkError] = useState(false)
+  const [screenshotPath, setScreenshotPath] = useState<string | null>(initialValues.sourceScreenshot)
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
+  const [screenshotError, setScreenshotError] = useState<string | null>(null)
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Preview: the chosen file if any, otherwise a signed URL for the saved one.
+  useEffect(() => {
+    if (screenshotFile) {
+      const url = URL.createObjectURL(screenshotFile)
+      setScreenshotPreview(url)
+      return () => URL.revokeObjectURL(url)
+    }
+    if (!screenshotPath) {
+      setScreenshotPreview(null)
+      return
+    }
+    let cancelled = false
+    getEntryPhotoUrl(screenshotPath)
+      .then((url) => {
+        if (!cancelled) setScreenshotPreview(url)
+      })
+      .catch(() => {
+        if (!cancelled) setScreenshotPreview(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [screenshotFile, screenshotPath])
+
+  function handleScreenshotPicked(file: File | undefined) {
+    if (!file) return
+    if (!file.type.startsWith("image/")) {
+      setScreenshotError("That file isn't an image.")
+      return
+    }
+    if (file.size > MAX_SCREENSHOT_BYTES) {
+      setScreenshotError("Image is over 15 MB.")
+      return
+    }
+    setScreenshotError(null)
+    setScreenshotFile(file)
+  }
+
+  function removeScreenshot() {
+    setScreenshotFile(null)
+    setScreenshotPath(null)
+    setScreenshotError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  const hasScreenshot = Boolean(screenshotFile || screenshotPath)
   const [titleError, setTitleError] = useState(false)
 
   // Autocomplete: suggestions show while the title is being typed. Picking one
@@ -88,6 +167,9 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       const details = await getPlaceDetails(s.placeId, sessionTokenRef.current)
       setAddress(details.address || s.secondary)
       setNeighborhood(details.neighborhood)
+      // Autofill Type and Price when Google has them; both stay editable.
+      if (details.type) setTypesText(details.type)
+      if (details.priceLevel !== null) setPriceLevel(details.priceLevel)
     } catch (err) {
       // Keep the suggestion's address line; neighborhood stays editable by hand.
       console.warn(err)
@@ -117,6 +199,16 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       return
     }
 
+    let link: string | null = null
+    if (showLink) {
+      const result = normalizeLink(sourceLink)
+      if (!result.ok) {
+        setLinkError(true)
+        return
+      }
+      link = result.url
+    }
+
     onSubmit({
       title: trimmedTitle,
       categories,
@@ -128,6 +220,10 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       neighborhood: neighborhood.trim() || null,
       address: address.trim() || null,
       placeId,
+      sourcePerson: showPerson ? sourcePerson.trim() || null : null,
+      sourceLink: link,
+      sourceScreenshot: screenshotFile ? null : screenshotPath,
+      sourceScreenshotFile: screenshotFile,
       notes: notes.trim() || null,
     })
   }
@@ -227,7 +323,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
                 // Tapping the selected level again clears it.
                 onClick={() => setPriceLevel(selected ? null : level)}
                 className={`flex-1 rounded-pill py-2.5 text-[13px] font-bold ${
-                  selected ? "bg-ink text-background" : "bg-surface text-ink-soft"
+                  selected ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"
                 }`}
               >
                 {"$".repeat(level)}
@@ -249,8 +345,83 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
           className={inputClass}
         />
         <p className="text-[11px] text-ink-soft">
-          {placesEnabled ? "Filled in when you pick a suggested place." : "Neighborhood or area."}
+          {placesEnabled ? "Type, price and location fill in when you pick a suggested place." : "Neighborhood or area."}
         </p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <p className={labelClass}>where this came from</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" aria-pressed={hasScreenshot} onClick={() => fileInputRef.current?.click()} className={chipClass(hasScreenshot)}>
+            <ScreenshotIcon className="size-3.5" />
+            screenshot
+          </button>
+          <button type="button" aria-pressed={showLink} onClick={() => {
+            setShowLink((v) => !v)
+            if (showLink) {
+              setSourceLink("")
+              setLinkError(false)
+            }
+          }} className={chipClass(showLink)}>
+            <LinkIcon className="size-3.5" />
+            link
+          </button>
+          <button type="button" aria-pressed={showPerson} onClick={() => {
+            setShowPerson((v) => !v)
+            if (showPerson) setSourcePerson("")
+          }} className={chipClass(showPerson)}>
+            <PersonIcon className="size-3.5" />
+            someone else
+          </button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handleScreenshotPicked(e.target.files?.[0])}
+        />
+        {screenshotError && <p className="text-xs text-red-600">{screenshotError}</p>}
+        {hasScreenshot && (
+          <div className="flex items-center gap-3">
+            {screenshotPreview ? (
+              <img src={screenshotPreview} alt="Screenshot preview" className="size-16 rounded-photo object-cover" />
+            ) : (
+              <div className="size-16 rounded-photo bg-surface" />
+            )}
+            <button type="button" onClick={removeScreenshot} className="text-[12px] font-bold text-ink-soft">
+              remove
+            </button>
+          </div>
+        )}
+        {showLink && (
+          <div className="flex flex-col gap-1">
+            <input
+              value={sourceLink}
+              onChange={(e) => {
+                setSourceLink(e.target.value)
+                if (linkError) setLinkError(false)
+              }}
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              placeholder="https://..."
+              aria-label="Source link"
+              className={inputClass}
+            />
+            {linkError && <p className="text-xs text-red-600">That doesn't look like a valid link.</p>}
+          </div>
+        )}
+        {showPerson && (
+          <input
+            value={sourcePerson}
+            onChange={(e) => setSourcePerson(e.target.value)}
+            placeholder="Who told you about it?"
+            aria-label="Who recommended it"
+            className={inputClass}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -280,7 +451,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         <button
           type="submit"
           disabled={submitting}
-          className="flex-1 rounded-pill bg-ink py-3.5 text-[13.5px] font-bold text-background disabled:opacity-60"
+          className="flex-1 rounded-pill bg-accent py-3.5 text-[13.5px] font-bold text-accent-soft disabled:opacity-60"
         >
           {submitting ? "saving..." : submitLabel}
         </button>

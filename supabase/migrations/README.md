@@ -20,6 +20,9 @@ workflow. Until then, apply these by hand:
    7. `20260921130000_card_place_details.sql` — adds `place_id`, `address`,
       `neighborhood`, `price_level`, `types` to `cards`. Also required before
       the updated app can save a card.
+   8. `20260921140000_card_source.sql` — adds `source_person`, `source_link`,
+      `source_screenshot` to `cards`. Required before saving a card with the
+      updated app.
 
 Once you have the CLI (`supabase login`, `supabase link --project-ref
 <ref>`), these same files apply via `supabase db push`, and future schema
