@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { BackChevronIcon } from "../assets/icons/card-icons"
 import { cardColorClasses } from "../components/Card"
-import { CardForm } from "../components/CardForm"
+import { CardForm, type CardFormSubmit } from "../components/CardForm"
 import { deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards"
 import { cardColorForId } from "../lib/cardColor"
+import { cardBadges, isCategorySlug } from "../lib/categories"
 import type { Card } from "../types/database"
 
 const DELETE_CONFIRM_WINDOW_MS = 3000
@@ -60,7 +61,7 @@ export function CardDetailScreen() {
     }
   }, [])
 
-  async function handleSaveEdit(values: { title: string; category: string | null; notes: string | null; tags: string[] }) {
+  async function handleSaveEdit(values: CardFormSubmit) {
     if (!card) return
     setSavingEdit(true)
     setActionError(null)
@@ -150,9 +151,13 @@ export function CardDetailScreen() {
             <CardForm
               initialValues={{
                 title: card.title,
-                category: card.category ?? "",
+                categories: card.categories.filter(isCategorySlug),
                 notes: card.notes ?? "",
-                tagsText: card.tags.join(", "),
+                typesText: card.types.join(", "),
+                priceLevel: card.price_level,
+                neighborhood: card.neighborhood ?? "",
+                address: card.address ?? "",
+                placeId: card.place_id,
               }}
               submitLabel="save"
               submitting={savingEdit}
@@ -187,7 +192,7 @@ function CardDetailView({
   actionError: string | null
 }) {
   const { bg, fg } = cardColorClasses[cardColorForId(card.id)]
-  const badges = [card.category, ...card.tags].filter((b): b is string => Boolean(b))
+  const badges = cardBadges(card)
 
   return (
     <div className="flex flex-col gap-6">

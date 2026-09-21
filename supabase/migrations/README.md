@@ -14,6 +14,12 @@ workflow. Until then, apply these by hand:
    5. `20260911190000_grants.sql` — table grants for `authenticated` (RLS
       policies alone aren't enough; without these every query 403s with
       "permission denied for table X")
+   6. `20260921120000_card_categories.sql` — fixed multi-select card
+      categories (adds `cards.categories`). Run this **before** using the
+      updated app, or creating/editing a card will fail.
+   7. `20260921130000_card_place_details.sql` — adds `place_id`, `address`,
+      `neighborhood`, `price_level`, `types` to `cards`. Also required before
+      the updated app can save a card.
 
 Once you have the CLI (`supabase login`, `supabase link --project-ref
 <ref>`), these same files apply via `supabase db push`, and future schema

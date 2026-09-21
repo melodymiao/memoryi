@@ -31,10 +31,15 @@ exists so "shared" is built in from day one, not bolted on later.
 Seeded by hand for now (see migrations README) — there's no invite flow
 until step 7.
 
-**`cards`** — bucket list / wishlist items. `title`, `category` (free text —
-"food", "activity", "travel", ... — not an enum, so you can invent new ones
-without a migration), `status` (`wishlist` | `visited`), `notes`, `tags`
-(text array), `created_by`, `created_at`.
+**`cards`** — bucket list / wishlist items. `title`, `categories` (text
+array limited to twelve fixed slugs — food, cafe, bars, dessert, shopping,
+home, entertainment, nature, culture, travel, active, events; enforced by a
+check constraint, defined in `src/lib/categories.ts`), `status` (`wishlist` |
+`visited`), `notes`, and place details: `place_id` (Google Places id),
+`address`, `neighborhood`, `price_level` (1–4 for $–$$$$), `types` (specific
+kinds, e.g. `{omakase}` — separate from the fixed `categories`),
+`created_by`, `created_at`. The old free-text `category` and `tags` columns
+are kept for legacy rows but no longer written.
 
 **`entries`** — visited-place photo posts. `title`, `place_name`,
 `entry_date`, `caption`, `photos`, `source_card_id`, `created_by`,

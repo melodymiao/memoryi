@@ -17,10 +17,16 @@ const fixtureCard = {
   id: "card-1",
   space_id: SPACE_ID,
   title: "Sushi Gen",
-  category: "food",
+  category: null,
+  categories: ["food"],
   status: "wishlist" as const,
   notes: null,
-  tags: ["omakase"],
+  tags: [],
+  place_id: "place-1",
+  address: "422 E 2nd St, Los Angeles, CA",
+  neighborhood: "Little Tokyo",
+  price_level: 3,
+  types: ["omakase"],
   created_by: USER_ID,
   created_at: "2026-01-01T00:00:00.000Z",
 }
@@ -55,14 +61,26 @@ describe("createCard", () => {
     const query = makeQueryMock({ data: fixtureCard, error: null })
     vi.mocked(supabase.from).mockReturnValue(query as never)
 
-    const result = await createCard({ title: "Sushi Gen", category: "food", tags: ["omakase"] })
+    const result = await createCard({
+      title: "Sushi Gen",
+      categories: ["food"],
+      types: ["omakase"],
+      priceLevel: 3,
+      neighborhood: "Little Tokyo",
+      address: "422 E 2nd St, Los Angeles, CA",
+      placeId: "place-1",
+    })
 
     expect(query.insert).toHaveBeenCalledWith({
       space_id: SPACE_ID,
       title: "Sushi Gen",
-      category: "food",
+      categories: ["food"],
       notes: null,
-      tags: ["omakase"],
+      place_id: "place-1",
+      address: "422 E 2nd St, Los Angeles, CA",
+      neighborhood: "Little Tokyo",
+      price_level: 3,
+      types: ["omakase"],
       status: undefined,
       created_by: USER_ID,
     })
@@ -105,23 +123,31 @@ describe("getCard", () => {
 })
 
 describe("updateCard", () => {
-  it("updates title/category/notes/tags for the given id", async () => {
+  it("updates title/categories/notes and place details for the given id", async () => {
     const updated = { ...fixtureCard, title: "Sushi Gen (updated)", notes: "counter seats" }
     const query = makeQueryMock({ data: updated, error: null })
     vi.mocked(supabase.from).mockReturnValue(query as never)
 
     const result = await updateCard("card-1", {
       title: "Sushi Gen (updated)",
-      category: "food",
+      categories: ["food", "cafe"],
       notes: "counter seats",
-      tags: ["omakase"],
+      placeId: "place-1",
+      address: "422 E 2nd St, Los Angeles, CA",
+      neighborhood: "Little Tokyo",
+      priceLevel: 3,
+      types: ["omakase"],
     })
 
     expect(query.update).toHaveBeenCalledWith({
       title: "Sushi Gen (updated)",
-      category: "food",
+      categories: ["food", "cafe"],
       notes: "counter seats",
-      tags: ["omakase"],
+      place_id: "place-1",
+      address: "422 E 2nd St, Los Angeles, CA",
+      neighborhood: "Little Tokyo",
+      price_level: 3,
+      types: ["omakase"],
     })
     expect(query.eq).toHaveBeenCalledWith("id", "card-1")
     expect(result).toEqual(updated)

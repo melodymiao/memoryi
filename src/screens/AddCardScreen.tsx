@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { BackChevronIcon } from "../assets/icons/card-icons"
-import { CardForm } from "../components/CardForm"
+import { CardForm, type CardFormSubmit } from "../components/CardForm"
 import { createCard } from "../data/cards"
 
 /**
@@ -15,15 +15,19 @@ export function AddCardScreen() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(values: { title: string; category: string | null; notes: string | null; tags: string[] }) {
+  async function handleSubmit(values: CardFormSubmit) {
     setSubmitting(true)
     setError(null)
     try {
       await createCard({
         title: values.title,
-        category: values.category ?? undefined,
+        categories: values.categories,
         notes: values.notes ?? undefined,
-        tags: values.tags,
+        types: values.types,
+        priceLevel: values.priceLevel ?? undefined,
+        neighborhood: values.neighborhood ?? undefined,
+        address: values.address ?? undefined,
+        placeId: values.placeId ?? undefined,
       })
       navigate("/cards")
     } catch (err) {
@@ -50,7 +54,16 @@ export function AddCardScreen() {
       <div className="px-screen-x pb-8">
         {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
         <CardForm
-          initialValues={{ title: "", category: "", notes: "", tagsText: "" }}
+          initialValues={{
+            title: "",
+            categories: [],
+            typesText: "",
+            priceLevel: null,
+            neighborhood: "",
+            address: "",
+            placeId: null,
+            notes: "",
+          }}
           submitLabel="add card"
           submitting={submitting}
           onSubmit={handleSubmit}

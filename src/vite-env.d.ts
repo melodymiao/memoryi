@@ -3,6 +3,8 @@
 interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string
   readonly VITE_SUPABASE_ANON_KEY: string
+  /** Optional — enables business-name autocomplete. Must be a referrer-restricted key. */
+  readonly VITE_GOOGLE_PLACES_API_KEY?: string
 }
 
 interface ImportMeta {

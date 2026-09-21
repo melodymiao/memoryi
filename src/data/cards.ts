@@ -6,9 +6,13 @@ import type { Card, CardStatus } from "../types/database"
 
 export interface CreateCardInput {
   title: string
-  category?: string
+  categories?: string[]
   notes?: string
-  tags?: string[]
+  placeId?: string
+  address?: string
+  neighborhood?: string
+  priceLevel?: number
+  types?: string[]
   /** Defaults to "wishlist" (DB default) if omitted. */
   status?: CardStatus
 }
@@ -41,9 +45,13 @@ export async function createCard(input: CreateCardInput): Promise<Card> {
     .insert({
       space_id: spaceId,
       title: input.title,
-      category: input.category ?? null,
+      categories: input.categories ?? [],
       notes: input.notes ?? null,
-      tags: input.tags ?? [],
+      place_id: input.placeId ?? null,
+      address: input.address ?? null,
+      neighborhood: input.neighborhood ?? null,
+      price_level: input.priceLevel ?? null,
+      types: input.types ?? [],
       status: input.status,
       created_by: userId,
     })
@@ -68,9 +76,13 @@ export async function updateCardStatus(id: string, status: CardStatus): Promise<
 
 export interface UpdateCardInput {
   title: string
-  category: string | null
+  categories: string[]
   notes: string | null
-  tags: string[]
+  placeId: string | null
+  address: string | null
+  neighborhood: string | null
+  priceLevel: number | null
+  types: string[]
 }
 
 export async function updateCard(id: string, input: UpdateCardInput): Promise<Card> {
@@ -78,9 +90,13 @@ export async function updateCard(id: string, input: UpdateCardInput): Promise<Ca
     .from("cards")
     .update({
       title: input.title,
-      category: input.category,
+      categories: input.categories,
       notes: input.notes,
-      tags: input.tags,
+      place_id: input.placeId,
+      address: input.address,
+      neighborhood: input.neighborhood,
+      price_level: input.priceLevel,
+      types: input.types,
     })
     .eq("id", id)
     .select()
