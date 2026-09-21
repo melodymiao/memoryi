@@ -88,3 +88,34 @@ export function cardBadges(card: {
     ...card.tags,
   ]
 }
+
+/** Selected-chip color per category, drawn from the card palette: eat & drink
+ * orange, going out wasabi, outdoors & travel sage, indoors & culture blue. */
+export type CategoryColor = "orange" | "wasabi" | "sage" | "coolBlue"
+
+export const categoryColor: Record<CategorySlug, CategoryColor> = {
+  food: "orange",
+  cafe: "orange",
+  bars: "orange",
+  dessert: "orange",
+  shopping: "wasabi",
+  entertainment: "wasabi",
+  active: "wasabi",
+  events: "wasabi",
+  nature: "sage",
+  travel: "sage",
+  home: "coolBlue",
+  culture: "coolBlue",
+}
+
+/** Full literal class strings (not built dynamically) so Tailwind sees them. */
+const selectedChipClasses: Record<CategoryColor, string> = {
+  orange: "bg-orange text-orange-fg",
+  wasabi: "bg-wasabi text-wasabi-fg",
+  sage: "bg-sage text-sage-fg",
+  coolBlue: "bg-cool-blue text-cool-blue-fg",
+}
+
+export function selectedCategoryChipClass(slug: CategorySlug): string {
+  return selectedChipClasses[categoryColor[slug]]
+}

@@ -1,4 +1,4 @@
-import { CATEGORIES, type CategorySlug } from "../../lib/categories"
+import { CATEGORIES, selectedCategoryChipClass, type CategorySlug } from "../../lib/categories"
 
 export interface CategoryPickerProps {
   value: CategorySlug[]
@@ -23,7 +23,7 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
             title={cat.description}
             onClick={() => toggle(cat.slug)}
             className={`rounded-pill px-3.5 py-2 text-[12px] ${
-              selected ? "bg-accent font-bold text-accent-soft" : "bg-surface font-semibold text-ink-soft"
+              selected ? `${selectedCategoryChipClass(cat.slug)} font-bold` : "bg-surface font-semibold text-ink-soft"
             }`}
           >
             <span aria-hidden>{cat.emoji}</span> {cat.label}

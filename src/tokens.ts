@@ -14,6 +14,7 @@ export const color = {
   inkSoft: "#a6a69e",
   accent: "#3d202b",
   accentSoft: "#c29cac",
+  onAccent: "#dfd4d9",
 } as const
 
 /** Card color variants — bg/fg pairs, see Card.tsx `color` prop. */

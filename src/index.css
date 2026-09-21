@@ -25,6 +25,8 @@
   /* Accent (active filter pills, primary actions) */
   --color-accent: #3d202b;
   --color-accent-soft: #c29cac;
+  /* Text/icons on top of `accent` fills — higher contrast than accent-soft. */
+  --color-on-accent: #dfd4d9;
 
   /* Card color variants — each pairs a background with its own foreground text
      color, tuned per-swatch for contrast rather than one fixed ink color. */

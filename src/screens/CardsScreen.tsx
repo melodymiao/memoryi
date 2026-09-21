@@ -4,7 +4,7 @@ import { PlusIcon } from "../assets/icons/card-icons"
 import { Card } from "../components/Card"
 import { useCards } from "../data/cards"
 import { cardColorForId } from "../lib/cardColor"
-import { CATEGORIES, cardBadges, type CategorySlug } from "../lib/categories"
+import { CATEGORIES, cardBadges, selectedCategoryChipClass, type CategorySlug } from "../lib/categories"
 import type { CardStatus } from "../types/database"
 
 /**
@@ -62,7 +62,7 @@ export function CardsScreen() {
         <Link
           to="/cards/new"
           aria-label="Add card"
-          className="flex size-[38px] items-center justify-center rounded-pill bg-accent text-accent-soft"
+          className="flex size-[38px] items-center justify-center rounded-pill bg-accent text-on-accent"
         >
           <PlusIcon className="size-[17px]" />
         </Link>
@@ -72,7 +72,7 @@ export function CardsScreen() {
         <div className="relative shrink-0">
           <div
             className={`flex items-center rounded-pill text-[11.5px] font-semibold ${
-              statusActive ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"
+              statusActive ? "bg-accent text-on-accent" : "bg-surface text-ink-soft"
             }`}
           >
             <button
@@ -140,7 +140,7 @@ export function CardsScreen() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggleCategory(cat.slug)}
-                className={`${chipBase} ${selected ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"}`}
+                className={`${chipBase} ${selected ? `${selectedCategoryChipClass(cat.slug)} font-bold` : "bg-surface text-ink-soft"}`}
               >
                 <span aria-hidden>{cat.emoji}</span> {cat.label}
               </button>

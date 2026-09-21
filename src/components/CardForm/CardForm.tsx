@@ -72,7 +72,7 @@ const MAX_SCREENSHOT_BYTES = 15 * 1024 * 1024 // matches the storage bucket limi
 
 const chipClass = (active: boolean) =>
   `flex items-center gap-1.5 rounded-pill px-3.5 py-2 text-[12px] ${
-    active ? "bg-accent font-bold text-accent-soft" : "bg-surface font-semibold text-ink-soft"
+    active ? "bg-accent font-bold text-on-accent" : "bg-surface font-semibold text-ink-soft"
   }`
 
 export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submitting = false }: CardFormProps) {
@@ -144,6 +144,8 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
 
   const hasScreenshot = Boolean(screenshotFile || screenshotPath)
   const [titleError, setTitleError] = useState(false)
+  const [categoryError, setCategoryError] = useState(false)
+  const [locationError, setLocationError] = useState(false)
 
   // Autocomplete: suggestions show while the title is being typed. Picking one
   // (or clicking away) closes the list; typing again reopens it.
@@ -194,10 +196,13 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const trimmedTitle = title.trim()
-    if (!trimmedTitle) {
-      setTitleError(true)
-      return
-    }
+    const missingTitle = !trimmedTitle
+    const missingCategory = categories.length === 0
+    const missingLocation = !neighborhood.trim()
+    setTitleError(missingTitle)
+    setCategoryError(missingCategory)
+    setLocationError(missingLocation)
+    if (missingTitle || missingCategory || missingLocation) return
 
     let link: string | null = null
     if (showLink) {
@@ -234,7 +239,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="relative flex flex-col gap-1.5">
         <label htmlFor="card-title" className={labelClass}>
-          title
+          title *
         </label>
         <input
           id="card-title"
@@ -290,9 +295,32 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <p className={labelClass}>category</p>
-        <CategoryPicker value={categories} onChange={setCategories} />
-        <p className="text-[11px] text-ink-soft">Pick as many as fit.</p>
+        <label htmlFor="card-location" className={labelClass}>
+          location *
+        </label>
+        <input
+          id="card-location"
+          value={neighborhood}
+          onChange={(e) => {
+            setNeighborhood(e.target.value)
+            if (locationError) setLocationError(false)
+          }}
+          placeholder="Little Tokyo"
+          className={inputClass}
+        />
+        {locationError && <p className="text-xs text-red-600">Location is required.</p>}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <p className={labelClass}>category *</p>
+        <CategoryPicker
+          value={categories}
+          onChange={(next) => {
+            setCategories(next)
+            if (categoryError) setCategoryError(false)
+          }}
+        />
+        {categoryError && <p className="text-xs text-red-600">Pick at least one category.</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -306,7 +334,6 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
           placeholder="omakase, ramen"
           className={inputClass}
         />
-        <p className="text-[11px] text-ink-soft">What specifically it is. Comma-separated.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -323,7 +350,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
                 // Tapping the selected level again clears it.
                 onClick={() => setPriceLevel(selected ? null : level)}
                 className={`flex-1 rounded-pill py-2.5 text-[13px] font-bold ${
-                  selected ? "bg-accent text-accent-soft" : "bg-surface text-ink-soft"
+                  selected ? "bg-accent text-on-accent" : "bg-surface text-ink-soft"
                 }`}
               >
                 {"$".repeat(level)}
@@ -331,22 +358,6 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
             )
           })}
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="card-location" className={labelClass}>
-          location
-        </label>
-        <input
-          id="card-location"
-          value={neighborhood}
-          onChange={(e) => setNeighborhood(e.target.value)}
-          placeholder="Little Tokyo"
-          className={inputClass}
-        />
-        <p className="text-[11px] text-ink-soft">
-          {placesEnabled ? "Type, price and location fill in when you pick a suggested place." : "Neighborhood or area."}
-        </p>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -451,7 +462,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         <button
           type="submit"
           disabled={submitting}
-          className="flex-1 rounded-pill bg-accent py-3.5 text-[13.5px] font-bold text-accent-soft disabled:opacity-60"
+          className="flex-1 rounded-pill bg-accent py-3.5 text-[13.5px] font-bold text-on-accent disabled:opacity-60"
         >
           {submitting ? "saving..." : submitLabel}
         </button>

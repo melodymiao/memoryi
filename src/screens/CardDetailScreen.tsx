@@ -232,7 +232,7 @@ function CardDetailView({
           type="button"
           onClick={onToggleStatus}
           disabled={togglingStatus}
-          className="w-full rounded-pill bg-accent py-4 text-[13.5px] font-bold text-accent-soft disabled:opacity-60"
+          className="w-full rounded-pill bg-accent py-4 text-[13.5px] font-bold text-on-accent disabled:opacity-60"
         >
           {togglingStatus ? "updating..." : card.status === "wishlist" ? "mark as visited" : "mark as wishlist"}
         </button>

@@ -40,6 +40,18 @@ function normalizeCard(row: Card): Card {
   }
 }
 
+/** Runs one stage of a save and, if it throws, says which stage — a bare
+ * "Load failed" (Safari's network-error message) doesn't say whether the
+ * screenshot upload or the save itself failed. */
+async function step<T>(label: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`${label} failed: ${message}`, { cause: err })
+  }
+}
+
 export async function listCards(): Promise<Card[]> {
   const spaceId = await getMySpaceId()
   const { data, error } = await supabase
@@ -63,7 +75,7 @@ export async function getCard(id: string): Promise<Card> {
 export async function createCard(input: CreateCardInput): Promise<Card> {
   const [spaceId, userId] = await Promise.all([getMySpaceId(), ensureSession()])
   const sourceScreenshot = input.sourceScreenshotFile
-    ? await uploadCardSourceScreenshot(spaceId, input.sourceScreenshotFile)
+    ? await step("Uploading the screenshot", () => uploadCardSourceScreenshot(spaceId, input.sourceScreenshotFile!))
     : null
 
   const { data, error } = await supabase
@@ -87,7 +99,9 @@ export async function createCard(input: CreateCardInput): Promise<Card> {
     .select()
     .single()
 
-  if (error) throw error
+  // supabase-js reports network failures (Safari: "TypeError: Load failed") as
+  // `error` rather than throwing, so name the stage here too.
+  if (error) throw new Error(`Saving the card failed: ${error.message}`, { cause: error })
   return normalizeCard(data as Card)
 }
 
@@ -122,7 +136,9 @@ export interface UpdateCardInput {
 
 export async function updateCard(id: string, input: UpdateCardInput): Promise<Card> {
   const sourceScreenshot = input.sourceScreenshotFile
-    ? await uploadCardSourceScreenshot(await getMySpaceId(), input.sourceScreenshotFile)
+    ? await step("Uploading the screenshot", async () =>
+        uploadCardSourceScreenshot(await getMySpaceId(), input.sourceScreenshotFile!),
+      )
     : input.sourceScreenshot
   const { data, error } = await supabase
     .from("cards")
