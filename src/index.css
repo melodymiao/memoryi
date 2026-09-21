@@ -12,6 +12,9 @@
  * --spacing-screen-x  -> px-screen-x
  * --shadow-float      -> shadow-float
  */
+/* Matches when launched from the home screen (no browser chrome). */
+@custom-variant standalone (@media (display-mode: standalone));
+
 @theme {
   /* Neutrals (app chrome: backgrounds, primary/secondary text) */
   --color-background: #fffbf5;

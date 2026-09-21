@@ -20,10 +20,11 @@ const tabs: { to: string; label: string; icon: ComponentType<SVGProps<SVGSVGElem
 export function TabBar() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-10 flex justify-center px-tabbar-x"
-      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
+      // Browser: floating pill, 8px off the bottom. Installed app (standalone):
+      // docked flush to the bottom edge, extending under the home indicator.
+      className="fixed inset-x-0 bottom-0 z-10 flex justify-center px-tabbar-x pb-2 standalone:px-0 standalone:pb-0"
     >
-      <div className="flex w-full max-w-md items-start justify-center gap-1 rounded-tabbar bg-background px-2 py-2.5 shadow-float">
+      <div className="flex w-full max-w-md items-start justify-center gap-1 rounded-tabbar bg-background px-2 py-2.5 shadow-float standalone:max-w-none standalone:rounded-b-none standalone:pb-[max(10px,env(safe-area-inset-bottom))] standalone:shadow-[0px_-4px_16px_rgba(20,22,26,0.08)]">
         {tabs.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

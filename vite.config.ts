@@ -14,6 +14,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registration is done in src/main.tsx via virtual:pwa-register so we can
+      // reload on update and re-check when the app is reopened.
+      injectRegister: false,
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
         id: '/',
@@ -33,6 +36,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // New worker activates immediately and takes over open tabs, and old
+        // precaches are purged. Explicit rather than implied by registerType.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       },
       devOptions: {
