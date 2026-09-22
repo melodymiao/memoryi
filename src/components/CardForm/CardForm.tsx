@@ -33,6 +33,8 @@ export interface CardFormValues {
   neighborhood: string
   address: string
   placeId: string | null
+  latitude: number | null
+  longitude: number | null
   sourcePerson: string
   sourceLink: string
   /** Existing screenshot's storage path, if any. */
@@ -48,12 +50,16 @@ export interface CardFormSubmit {
   neighborhood: string | null
   address: string | null
   placeId: string | null
+  latitude: number | null
+  longitude: number | null
   sourcePerson: string | null
   sourceLink: string | null
   /** Existing screenshot path to keep (null if none or removed). */
   sourceScreenshot: string | null
   /** A newly chosen screenshot to upload. */
   sourceScreenshotFile: File | null
+  /** The card's own photos (only collected when `allowPhotos`); the first is the list thumbnail. */
+  photoFiles: File[]
   notes: string | null
 }
 
@@ -61,8 +67,11 @@ export interface CardFormProps {
   initialValues: CardFormValues
   submitLabel: string
   onSubmit: (values: CardFormSubmit) => void
-  onCancel?: () => void
+  /** Reports whether any field differs from `initialValues` (used to guard leaving the edit screen). */
+  onDirtyChange?: (dirty: boolean) => void
   submitting?: boolean
+  /** Show the "photos" picker (add screen). On existing cards photos are managed on the detail screen. */
+  allowPhotos?: boolean
 }
 
 const inputClass =
@@ -70,6 +79,31 @@ const inputClass =
 const labelClass = "text-[10px] font-bold tracking-[0.6px] text-ink-soft uppercase"
 
 const PRICE_LEVELS = [1, 2, 3, 4] as const
+
+function formSnapshot(v: {
+  title: string
+  categories: string[]
+  typesText: string
+  priceLevel: number | null
+  neighborhood: string
+  placeId: string | null
+  sourcePerson: string
+  sourceLink: string
+  screenshot: string
+  photoCount: number
+  notes: string
+}): string {
+  return JSON.stringify({
+    ...v,
+    title: v.title.trim(),
+    categories: [...v.categories].sort(),
+    typesText: v.typesText.trim(),
+    neighborhood: v.neighborhood.trim(),
+    sourcePerson: v.sourcePerson.trim(),
+    sourceLink: v.sourceLink.trim(),
+    notes: v.notes.trim(),
+  })
+}
 const MAX_SCREENSHOT_BYTES = 15 * 1024 * 1024 // matches the storage bucket limit
 
 const chipClass = (active: boolean) =>
@@ -77,7 +111,14 @@ const chipClass = (active: boolean) =>
     active ? "bg-accent font-bold text-on-accent" : "bg-surface font-semibold text-ink-soft"
   }`
 
-export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submitting = false }: CardFormProps) {
+export function CardForm({
+  initialValues,
+  submitLabel,
+  onSubmit,
+  onDirtyChange,
+  submitting = false,
+  allowPhotos = false,
+}: CardFormProps) {
   const [title, setTitle] = useState(initialValues.title)
   const [categories, setCategories] = useState<CategorySlug[]>(initialValues.categories)
   const [typesText, setTypesText] = useState(initialValues.typesText)
@@ -85,6 +126,10 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
   const [neighborhood, setNeighborhood] = useState(initialValues.neighborhood)
   const [address, setAddress] = useState(initialValues.address)
   const [placeId, setPlaceId] = useState<string | null>(initialValues.placeId)
+  const [coords, setCoords] = useState<{ latitude: number | null; longitude: number | null }>({
+    latitude: initialValues.latitude,
+    longitude: initialValues.longitude,
+  })
   const [notes, setNotes] = useState(initialValues.notes)
 
   // Source: any combination of a person, a link and a screenshot.
@@ -145,6 +190,25 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
   }
 
   const hasScreenshot = Boolean(screenshotFile || screenshotPath)
+
+  // The card's own photos (separate from the source screenshot above).
+  const [photoFiles, setPhotoFiles] = useState<File[]>([])
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+  useEffect(() => {
+    const urls = photoFiles.map((f) => URL.createObjectURL(f))
+    setPhotoPreviews(urls)
+    return () => urls.forEach((u) => URL.revokeObjectURL(u))
+  }, [photoFiles])
+
+  function handlePhotosPicked(files: FileList | null) {
+    const picked = Array.from(files ?? [])
+    if (photoInputRef.current) photoInputRef.current.value = ""
+    const images = picked.filter((f) => f.type.startsWith("image/") && f.size <= MAX_SCREENSHOT_BYTES)
+    setPhotoError(images.length < picked.length ? "Some files were skipped (not an image, or over 15 MB)." : null)
+    if (images.length > 0) setPhotoFiles((prev) => [...prev, ...images])
+  }
   const [titleError, setTitleError] = useState(false)
   const [categoryError, setCategoryError] = useState(false)
   // Once the user picks categories themselves, place autofill stops overriding them.
@@ -176,6 +240,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       // address carry it); skip if the title was edited in the meantime.
       setTitle((current) => (current === s.name ? stripAreaFromName(s.name, details.areaNames) : current))
       setNeighborhood(details.neighborhood)
+      setCoords({ latitude: details.latitude, longitude: details.longitude })
       // Autofill Type and Price when Google has them; both stay editable.
       if (details.type) setTypesText(details.type)
       if (details.priceLevel !== null) setPriceLevel(details.priceLevel)
@@ -201,6 +266,7 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
     // Editing the name after picking a place unlinks it.
     if (placeId) {
       setPlaceId(null)
+      setCoords({ latitude: null, longitude: null })
       setAddress("")
     }
   }
@@ -237,13 +303,51 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
       neighborhood: neighborhood.trim() || null,
       address: address.trim() || null,
       placeId,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
       sourcePerson: showPerson ? sourcePerson.trim() || null : null,
       sourceLink: link,
       sourceScreenshot: screenshotFile ? null : screenshotPath,
       sourceScreenshotFile: screenshotFile,
+      photoFiles: allowPhotos ? photoFiles : [],
       notes: notes.trim() || null,
     })
   }
+
+  // Dirty tracking: compare a normalized snapshot of the current fields with the
+  // one taken from the initial values.
+  const initialSnapshotRef = useRef(
+    formSnapshot({
+      title: initialValues.title,
+      categories: initialValues.categories,
+      typesText: initialValues.typesText,
+      priceLevel: initialValues.priceLevel,
+      neighborhood: initialValues.neighborhood,
+      placeId: initialValues.placeId,
+      sourcePerson: initialValues.sourcePerson,
+      sourceLink: initialValues.sourceLink,
+      screenshot: initialValues.sourceScreenshot ?? "",
+      photoCount: 0,
+      notes: initialValues.notes,
+    }),
+  )
+  const dirty =
+    formSnapshot({
+      title,
+      categories,
+      typesText,
+      priceLevel,
+      neighborhood,
+      placeId,
+      sourcePerson: showPerson ? sourcePerson : "",
+      sourceLink: showLink ? sourceLink : "",
+      screenshot: screenshotFile ? `new:${screenshotFile.name}:${screenshotFile.size}` : (screenshotPath ?? ""),
+      photoCount: photoFiles.length,
+      notes,
+    }) !== initialSnapshotRef.current
+  useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
 
   const showSuggestions = suggestOpen && suggestions.length > 0
 
@@ -276,7 +380,6 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
               href={mapsUrl({ placeId, name: title, address }) ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
             >
               📍 {address}
             </a>
@@ -380,6 +483,49 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         </div>
       </div>
 
+      {allowPhotos && (
+        <div className="flex flex-col gap-2">
+          <p className={labelClass}>photos</p>
+          <div
+            className="-mx-screen-x flex gap-2 overflow-x-auto px-screen-x [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {photoPreviews.map((src, i) => (
+              <div key={src} className="relative shrink-0">
+                <img src={src} alt="" className="size-20 rounded-photo object-cover" />
+                <button
+                  type="button"
+                  aria-label="Remove photo"
+                  onClick={() => setPhotoFiles((prev) => prev.filter((_, j) => j !== i))}
+                  className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] text-on-accent"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-photo bg-surface text-ink-soft"
+            >
+              <span aria-hidden className="text-[18px] leading-none">
+                +
+              </span>
+              <span className="text-[10.5px] font-bold">add photos</span>
+            </button>
+          </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handlePhotosPicked(e.target.files)}
+          />
+          {photoError && <p className="text-xs text-red-600">{photoError}</p>}
+        </div>
+      )}
+
       <div className="flex flex-col gap-2">
         <p className={labelClass}>where this came from</p>
         <div className="flex flex-wrap gap-2">
@@ -469,20 +615,15 @@ export function CardForm({ initialValues, submitLabel, onSubmit, onCancel, submi
         />
       </div>
 
-      <div className="mt-2 flex gap-2">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 rounded-pill bg-surface py-3.5 text-[13.5px] font-bold text-ink"
-          >
-            cancel
-          </button>
-        )}
+      {/* Sticky so the save button is always in reach on a long form. */}
+      <div
+        className="sticky bottom-0 z-10 -mx-screen-x mt-2 bg-background/95 px-screen-x pt-3 backdrop-blur"
+        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+      >
         <button
           type="submit"
           disabled={submitting}
-          className="flex-1 rounded-pill bg-accent py-3.5 text-[13.5px] font-bold text-on-accent disabled:opacity-60"
+          className="w-full rounded-pill bg-accent py-3.5 text-[13.5px] font-bold text-on-accent disabled:opacity-60"
         >
           {submitting ? "saving..." : submitLabel}
         </button>

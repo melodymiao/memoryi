@@ -107,7 +107,17 @@ export function Card({
 
       {hasPhoto && (
         <div className="h-[200px] w-full overflow-hidden rounded-photo bg-background/20">
-          {photoUrl && <img src={photoUrl} alt="" className="size-full object-cover" />}
+          {photoUrl && (
+            <img
+              src={photoUrl}
+              alt=""
+              loading="lazy"
+              className="size-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.visibility = "hidden"
+              }}
+            />
+          )}
         </div>
       )}
     </div>

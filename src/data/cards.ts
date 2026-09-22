@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { ensureSession } from "../lib/auth"
 import { getMySpaceId } from "./spaces"
-import { uploadCardSourceScreenshot } from "../lib/photos"
+import { uploadCardPhoto, uploadCardSourceScreenshot } from "../lib/photos"
 import type { Card, CardStatus } from "../types/database"
 
 export interface CreateCardInput {
@@ -10,12 +10,16 @@ export interface CreateCardInput {
   categories?: string[]
   notes?: string
   placeId?: string
+  latitude?: number
+  longitude?: number
   address?: string
   neighborhood?: string
   priceLevel?: number
   types?: string[]
   sourcePerson?: string
   sourceLink?: string
+  /** The card's own photos to upload; the first becomes its list thumbnail. */
+  photoFiles?: File[]
   /** Upload this file as the card's source screenshot. */
   sourceScreenshotFile?: File
   /** Defaults to "wishlist" (DB default) if omitted. */
@@ -34,6 +38,9 @@ function normalizeCard(row: Card): Card {
     address: row.address ?? null,
     neighborhood: row.neighborhood ?? null,
     price_level: row.price_level ?? null,
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
+    photos: row.photos ?? [],
     source_person: row.source_person ?? null,
     source_link: row.source_link ?? null,
     source_screenshot: row.source_screenshot ?? null,
@@ -74,6 +81,13 @@ export async function getCard(id: string): Promise<Card> {
 
 export async function createCard(input: CreateCardInput): Promise<Card> {
   const [spaceId, userId] = await Promise.all([getMySpaceId(), ensureSession()])
+  // Client-generated id so photos can be filed under it before the row exists.
+  const id = crypto.randomUUID()
+  const photoFiles = input.photoFiles ?? []
+  const photos =
+    photoFiles.length > 0
+      ? await step("Uploading photos", () => Promise.all(photoFiles.map((f) => uploadCardPhoto(spaceId, id, f))))
+      : []
   const sourceScreenshot = input.sourceScreenshotFile
     ? await step("Uploading the screenshot", () => uploadCardSourceScreenshot(spaceId, input.sourceScreenshotFile!))
     : null
@@ -81,11 +95,14 @@ export async function createCard(input: CreateCardInput): Promise<Card> {
   const { data, error } = await supabase
     .from("cards")
     .insert({
+      id,
       space_id: spaceId,
       title: input.title,
       categories: input.categories ?? [],
       notes: input.notes ?? null,
       place_id: input.placeId ?? null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
       address: input.address ?? null,
       neighborhood: input.neighborhood ?? null,
       price_level: input.priceLevel ?? null,
@@ -93,6 +110,7 @@ export async function createCard(input: CreateCardInput): Promise<Card> {
       source_person: input.sourcePerson ?? null,
       source_link: input.sourceLink ?? null,
       source_screenshot: sourceScreenshot,
+      photos,
       status: input.status,
       created_by: userId,
     })
@@ -122,6 +140,8 @@ export interface UpdateCardInput {
   categories: string[]
   notes: string | null
   placeId: string | null
+  latitude: number | null
+  longitude: number | null
   address: string | null
   neighborhood: string | null
   priceLevel: number | null
@@ -147,6 +167,8 @@ export async function updateCard(id: string, input: UpdateCardInput): Promise<Ca
       categories: input.categories,
       notes: input.notes,
       place_id: input.placeId,
+      latitude: input.latitude,
+      longitude: input.longitude,
       address: input.address,
       neighborhood: input.neighborhood,
       price_level: input.priceLevel,
@@ -160,6 +182,21 @@ export async function updateCard(id: string, input: UpdateCardInput): Promise<Ca
     .single()
 
   if (error) throw error
+  return normalizeCard(data as Card)
+}
+
+/** Uploads photos and appends them to the card's own photo list. */
+export async function addCardPhotos(card: Card, files: File[]): Promise<Card> {
+  const spaceId = await getMySpaceId()
+  const paths = await step("Uploading photos", () => Promise.all(files.map((f) => uploadCardPhoto(spaceId, card.id, f))))
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ photos: [...card.photos, ...paths] })
+    .eq("id", card.id)
+    .select()
+    .single()
+
+  if (error) throw new Error(`Saving the photos failed: ${error.message}`, { cause: error })
   return normalizeCard(data as Card)
 }
 

@@ -35,6 +35,8 @@ export interface PlaceDetails {
   type: string
   /** Google type identifiers, primary type first (see placeTypes.ts). */
   placeTypes: string[]
+  latitude: number | null
+  longitude: number | null
   /** City / neighborhood names for this place, used to trim them off titles. */
   areaNames: string[]
 }
@@ -95,6 +97,7 @@ interface DetailsResponse {
   primaryTypeDisplayName?: { text: string }
   primaryType?: string
   types?: string[]
+  location?: { latitude: number; longitude: number }
 }
 
 const PRICE_LEVELS: Record<string, number> = {
@@ -123,7 +126,7 @@ export function pickNeighborhood(components: AddressComponent[] = []): string {
 // priceLevel and primaryTypeDisplayName are in Google's higher-priced field
 // tiers; drop them from this mask to make lookups cheaper (price/type autofill
 // then stops).
-const DETAILS_FIELDS = "id,displayName,formattedAddress,addressComponents,priceLevel,primaryTypeDisplayName,primaryType,types"
+const DETAILS_FIELDS = "id,displayName,formattedAddress,addressComponents,priceLevel,primaryTypeDisplayName,primaryType,types,location"
 
 /** Names of the neighborhood / sub-area / city parts of an address. */
 export function areaNamesOf(components: AddressComponent[] = []): string[] {
@@ -179,6 +182,8 @@ export async function getPlaceDetails(
     priceLevel: priceLevelFromGoogle(data.priceLevel),
     type: data.primaryTypeDisplayName?.text ?? "",
     areaNames: areaNamesOf(data.addressComponents),
+    latitude: data.location?.latitude ?? null,
+    longitude: data.location?.longitude ?? null,
     placeTypes: [...new Set([data.primaryType, ...(data.types ?? [])].filter((t): t is string => Boolean(t)))],
   }
 }

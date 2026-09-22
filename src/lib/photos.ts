@@ -26,11 +26,30 @@ export async function uploadEntryPhoto(spaceId: string, entryId: string, file: F
   return path
 }
 
+/** Uploads one of a card's own photos; returns its Storage path (what goes in
+ * `cards.photos`). Same bucket and space-scoped policies as entry photos. */
+export function uploadCardPhoto(spaceId: string, cardId: string, file: File): Promise<string> {
+  return uploadEntryPhoto(spaceId, `card-photos/${cardId}`, file)
+}
+
 /** Signed, time-limited URL for displaying a photo. */
 export async function getEntryPhotoUrl(path: string, expiresInSeconds = 3600): Promise<string> {
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, expiresInSeconds)
   if (error || !data) throw error ?? new Error("Failed to create signed URL")
   return data.signedUrl
+}
+
+/** Signed URLs for many photos in one request, keyed by storage path. Paths
+ * that fail to sign are left out. */
+export async function getEntryPhotoUrls(paths: string[], expiresInSeconds = 3600): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(paths, expiresInSeconds)
+  if (error || !data) throw error ?? new Error("Failed to create signed URLs")
+  const out: Record<string, string> = {}
+  for (const item of data) {
+    if (item.path && item.signedUrl) out[item.path] = item.signedUrl
+  }
+  return out
 }
 
 export async function deleteEntryPhoto(path: string): Promise<void> {

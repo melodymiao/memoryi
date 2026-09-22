@@ -26,7 +26,8 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
               selected ? `${selectedCategoryChipClass(cat.slug)} font-bold` : "bg-surface font-semibold text-ink-soft"
             }`}
           >
-            <span aria-hidden>{cat.emoji}</span> {cat.label}
+            {selected && <span aria-hidden>{cat.emoji} </span>}
+            {cat.label}
           </button>
         )
       })}

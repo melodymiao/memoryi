@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { BackChevronIcon } from "../assets/icons/card-icons"
+import { BackChevronIcon, PlusIcon } from "../assets/icons/card-icons"
 import { cardColorClasses } from "../components/Card"
 import { CardForm, type CardFormSubmit } from "../components/CardForm"
-import { deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards"
+import { ConfirmDialog } from "../components/ConfirmDialog"
+import { addCardPhotos, deleteCard, getCard, updateCard, updateCardStatus } from "../data/cards"
 import { cardColorFor } from "../lib/cardColor"
 import { cardBadges, isCategorySlug } from "../lib/categories"
 import { linkHost, safeHref } from "../lib/links"
@@ -34,6 +35,9 @@ export function CardDetailScreen() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   const [editing, setEditing] = useState(false)
+  // Unsaved-changes guard for the edit form.
+  const [dirty, setDirty] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
   const [deleteArmed, setDeleteArmed] = useState(false)
@@ -70,16 +74,43 @@ export function CardDetailScreen() {
     setSavingEdit(true)
     setActionError(null)
     try {
-      const { sourceScreenshotFile, ...rest } = values
+      const { sourceScreenshotFile, photoFiles: _ignored, ...rest } = values
       const updated = await updateCard(card.id, { ...rest, sourceScreenshotFile: sourceScreenshotFile ?? undefined })
       setCard(updated)
       setEditing(false)
+      setDirty(false)
     } catch (err) {
       setActionError((err as Error).message)
     } finally {
       setSavingEdit(false)
     }
   }
+
+  function exitEdit() {
+    setEditing(false)
+    setDirty(false)
+    setConfirmLeave(false)
+    setActionError(null)
+  }
+
+  // While editing, < leaves edit mode (asking first if anything changed);
+  // otherwise it goes back to the list.
+  function handleBack() {
+    if (!editing) {
+      navigate("/cards")
+      return
+    }
+    if (dirty) setConfirmLeave(true)
+    else exitEdit()
+  }
+
+  // Closing the tab / app with unsaved edits.
+  useEffect(() => {
+    if (!editing || !dirty) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [editing, dirty])
 
   async function handleToggleStatus() {
     if (!card) return
@@ -122,7 +153,7 @@ export function CardDetailScreen() {
         <button
           type="button"
           aria-label="Back"
-          onClick={() => navigate("/cards")}
+          onClick={handleBack}
           className="flex size-[38px] items-center justify-center rounded-pill bg-surface text-ink"
         >
           <BackChevronIcon className="size-[17px]" />
@@ -147,6 +178,7 @@ export function CardDetailScreen() {
             deleting={deleting}
             onDeleteClick={handleDeleteClick}
             actionError={actionError}
+            onCardChange={setCard}
           />
         )}
 
@@ -163,6 +195,8 @@ export function CardDetailScreen() {
                 neighborhood: card.neighborhood ?? "",
                 address: card.address ?? "",
                 placeId: card.place_id,
+                latitude: card.latitude,
+                longitude: card.longitude,
                 sourcePerson: card.source_person ?? "",
                 sourceLink: card.source_link ?? "",
                 sourceScreenshot: card.source_screenshot,
@@ -170,14 +204,22 @@ export function CardDetailScreen() {
               submitLabel="save"
               submitting={savingEdit}
               onSubmit={handleSaveEdit}
-              onCancel={() => {
-                setEditing(false)
-                setActionError(null)
-              }}
+              onDirtyChange={setDirty}
             />
           </>
         )}
       </div>
+
+      {confirmLeave && (
+        <ConfirmDialog
+          title="unsaved changes"
+          message="Are you sure? Your changes to this card won't be saved."
+          cancelLabel="keep editing"
+          confirmLabel="discard changes"
+          onCancel={() => setConfirmLeave(false)}
+          onConfirm={exitEdit}
+        />
+      )}
     </div>
   )
 }
@@ -190,6 +232,7 @@ function CardDetailView({
   deleting,
   onDeleteClick,
   actionError,
+  onCardChange,
 }: {
   card: Card
   togglingStatus: boolean
@@ -198,6 +241,7 @@ function CardDetailView({
   deleting: boolean
   onDeleteClick: () => void
   actionError: string | null
+  onCardChange: (card: Card) => void
 }) {
   const { bg, fg } = cardColorClasses[cardColorFor(card)]
   const badges = cardBadges(card)
@@ -217,6 +261,8 @@ function CardDetailView({
         )}
       </div>
 
+      <SourceBlock card={card} />
+
       {card.address && (
         <a
           href={mapsUrl({ placeId: card.place_id, name: card.title, address: card.address }) ?? undefined}
@@ -227,10 +273,12 @@ function CardDetailView({
           <span aria-hidden className="text-[15px]">
             📍
           </span>
-          <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink underline decoration-ink-soft/50">{card.address}</span>
+          <span className="min-w-0 flex-1 text-[13px] font-semibold text-ink">{card.address}</span>
           <span className="shrink-0 text-[11px] font-bold text-ink-soft">open in maps</span>
         </a>
       )}
+
+      <CardPhotos card={card} onCardChange={onCardChange} />
 
       {card.notes && (
         <div>
@@ -238,8 +286,6 @@ function CardDetailView({
           <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{card.notes}</p>
         </div>
       )}
-
-      <SourceBlock card={card} />
 
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
 
@@ -356,6 +402,84 @@ function SourceBlock({ card }: { card: Card }) {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Photos row — Figma cards-3 photos-carousel (node 1630:6614): 138×172
+ * rounded tiles scrolling sideways, ending in an "add photos" tile. Photos are
+ * uploaded to the private bucket and shown via signed URLs; tapping one opens
+ * it full size.
+ */
+function CardPhotos({ card, onCardChange }: { card: Card; onCardChange: (card: Card) => void }) {
+  const [urls, setUrls] = useState<(string | null)[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const photosKey = card.photos.join("|")
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(card.photos.map((path) => getEntryPhotoUrl(path).catch(() => null))).then((result) => {
+      if (!cancelled) setUrls(result)
+    })
+    return () => {
+      cancelled = true
+    }
+    // photosKey stands in for the card.photos contents
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [photosKey])
+
+  async function handleFiles(files: FileList | null) {
+    const images = Array.from(files ?? []).filter((f) => f.type.startsWith("image/"))
+    if (inputRef.current) inputRef.current.value = ""
+    if (images.length === 0) return
+    setUploading(true)
+    setError(null)
+    try {
+      onCardChange(await addCardPhotos(card, images))
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div
+        className="-mx-screen-x flex gap-2.5 overflow-x-auto px-screen-x [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {card.photos.map((path, i) =>
+          urls[i] ? (
+            <a key={path} href={urls[i]!} target="_blank" rel="noopener noreferrer" className="shrink-0">
+              <img src={urls[i]!} alt="" className="h-[172px] w-[138px] rounded-photo object-cover" />
+            </a>
+          ) : (
+            <div key={path} className="h-[172px] w-[138px] shrink-0 rounded-photo bg-surface" />
+          ),
+        )}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex h-[172px] w-[138px] shrink-0 flex-col items-center justify-center gap-2 rounded-photo bg-surface text-ink-soft disabled:opacity-60"
+        >
+          <PlusIcon className="size-5" />
+          <span className="text-[11.5px] font-bold">{uploading ? "uploading..." : "add photos"}</span>
+        </button>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => void handleFiles(e.target.files)}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   )
 }

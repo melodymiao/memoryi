@@ -38,10 +38,15 @@ export interface Card {
   /** Google Places id when created from an autocomplete suggestion. */
   place_id: string | null
   address: string | null
+  /** Coordinates from the picked place; null for cards made by hand. */
+  latitude: number | null
+  longitude: number | null
   /** Neighborhood / area, e.g. "Little Tokyo". */
   neighborhood: string | null
   /** 1–4 for $–$$$$. */
   price_level: number | null
+  /** Your own uploaded photos: Storage paths in the entry-photos bucket, in order. */
+  photos: string[]
   /** Who told you about it. */
   source_person: string | null
   /** http(s) link the recommendation came from. */

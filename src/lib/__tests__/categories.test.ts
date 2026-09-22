@@ -19,7 +19,7 @@ describe("categories", () => {
   })
 
   it("badges a card by its categories, falling back to the legacy text", () => {
-    expect(cardCategoryBadges({ categories: ["food", "cafe"], category: "old" })).toEqual(["🍽️ Food", "☕ Cafe"])
+    expect(cardCategoryBadges({ categories: ["food", "cafe"], category: "old" })).toEqual(["Food", "Cafe"])
     expect(cardCategoryBadges({ categories: [], category: "date night" })).toEqual(["date night"])
     expect(cardCategoryBadges({ categories: [], category: null })).toEqual([])
   })
@@ -34,7 +34,7 @@ describe("categories", () => {
         neighborhood: "Little Tokyo",
         tags: ["date night"],
       }),
-    ).toEqual(["🍽️ Food", "omakase", "$$$", "Little Tokyo", "date night"])
+    ).toEqual(["Food", "omakase", "$$$", "Little Tokyo", "date night"])
   })
 
   it("formats price levels", () => {

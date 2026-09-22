@@ -36,11 +36,14 @@ array limited to twelve fixed slugs — food, cafe, bars, dessert, shopping,
 home, entertainment, nature, culture, travel, active, events; enforced by a
 check constraint, defined in `src/lib/categories.ts`), `status` (`wishlist` |
 `visited`), `notes`, and place details: `place_id` (Google Places id),
-`address`, `neighborhood`, `price_level` (1–4 for $–$$$$), `types` (specific
+`address`, `latitude`/`longitude` (from the picked place, for "near me"),
+`neighborhood`, `price_level` (1–4 for $–$$$$), `types` (specific
 kinds, e.g. `{omakase}` — separate from the fixed `categories`), and where
 the recommendation came from: `source_person`, `source_link`,
 `source_screenshot` (storage path in `entry-photos` under
-`<space_id>/card-sources/`; any combination may be set),
+`<space_id>/card-sources/`; any combination may be set), and `photos` (the
+card's own uploads: storage paths under `<space_id>/card-photos/<card_id>/`, in
+order — the first is the list thumbnail),
 `created_by`, `created_at`. The old free-text `category` and `tags` columns
 are kept for legacy rows but no longer written.
 

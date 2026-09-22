@@ -22,7 +22,7 @@ export function AppShell({ children, tabBar = true }: { children: ReactNode; tab
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <main
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-x-clip"
         style={{
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: tabBar ? "calc(env(safe-area-inset-bottom) + 96px)" : "env(safe-area-inset-bottom)",

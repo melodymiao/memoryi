@@ -53,9 +53,9 @@ export function getCategory(slug: string): CategoryDef | undefined {
   return BY_SLUG.get(slug)
 }
 
-/** "🍽️ Food" — used for card badges. Unknown slugs are dropped by callers. */
+/** Badge text for a category. Emojis only appear on selected filter chips. */
 export function categoryBadge(def: CategoryDef): string {
-  return `${def.emoji} ${def.label}`
+  return def.label
 }
 
 /** Badge text for a card: its fixed categories, or the legacy free-text

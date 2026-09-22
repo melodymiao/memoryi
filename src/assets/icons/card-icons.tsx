@@ -64,3 +64,14 @@ export function BackChevronIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+/** Sort glyph for the cards header button: three lines shrinking downward,
+ * matching the button in Figma (cards header, node 1661:6895). Hand-drawn to
+ * that look rather than pulled from the file. */
+export function SortIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M2.5 4.5h11M4.5 8h7M6.5 11.5h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}

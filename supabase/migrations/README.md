@@ -23,6 +23,12 @@ workflow. Until then, apply these by hand:
    8. `20260921140000_card_source.sql` — adds `source_person`, `source_link`,
       `source_screenshot` to `cards`. Required before saving a card with the
       updated app.
+   9. `20260921150000_card_photos.sql` — adds `cards.photos` (your own card
+      photos; the first is the list thumbnail). Required before saving a card
+      or opening the cards tab with the updated app.
+  10. `20260921160000_card_coordinates.sql` — adds `latitude` / `longitude`
+      to `cards` for the "near me" filter. Required before saving a card with
+      the updated app.
 
 Once you have the CLI (`supabase login`, `supabase link --project-ref
 <ref>`), these same files apply via `supabase db push`, and future schema
