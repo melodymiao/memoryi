@@ -220,18 +220,10 @@ export function CardsScreen() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          className={`${chipBase} ${moreCount > 0 ? "bg-accent text-on-accent" : "bg-surface text-ink-soft"}`}
-        >
-          More filters{moreCount > 0 ? ` · ${moreCount}` : ""}
-        </button>
-
         <div aria-hidden className="h-5 w-px shrink-0 bg-ink-soft/40" />
 
         <div
-          className="-mr-header-x flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 pr-header-x [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
           {CATEGORIES.map((cat) => {
@@ -250,6 +242,14 @@ export function CardsScreen() {
             )
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          className={`shrink-0 py-2 pl-1 text-[11.5px] text-accent ${moreCount > 0 ? "font-bold" : "font-semibold"}`}
+        >
+          More filters{moreCount > 0 ? ` · ${moreCount}` : ""}
+        </button>
       </div>
 
       <div className="px-screen-x pt-2">

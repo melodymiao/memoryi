@@ -492,12 +492,12 @@ export function CardForm({
           >
             {photoPreviews.map((src, i) => (
               <div key={src} className="relative shrink-0">
-                <img src={src} alt="" className="size-20 rounded-photo object-cover" />
+                <img src={src} alt="" className="size-28 rounded-photo object-cover" />
                 <button
                   type="button"
                   aria-label="Remove photo"
                   onClick={() => setPhotoFiles((prev) => prev.filter((_, j) => j !== i))}
-                  className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] text-on-accent"
+                  className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-accent text-[10px] text-on-accent"
                 >
                   ✕
                 </button>
@@ -506,12 +506,12 @@ export function CardForm({
             <button
               type="button"
               onClick={() => photoInputRef.current?.click()}
-              className="flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-photo bg-surface text-ink-soft"
+              className="flex size-28 shrink-0 flex-col items-center justify-center gap-1.5 rounded-photo bg-surface text-ink-soft"
             >
-              <span aria-hidden className="text-[18px] leading-none">
+              <span aria-hidden className="text-[26px] leading-none">
                 +
               </span>
-              <span className="text-[10.5px] font-bold">add photos</span>
+              <span className="text-[12px] font-bold">add photos</span>
             </button>
           </div>
           <input
@@ -615,9 +615,11 @@ export function CardForm({
         />
       </div>
 
-      {/* Sticky so the save button is always in reach on a long form. */}
+      {/* Fixed (not sticky) so the save button never moves, even at the end of
+          the scroll; the spacer keeps the last field clear of it. */}
+      <div aria-hidden style={{ height: "calc(max(12px, env(safe-area-inset-bottom)) + 64px)" }} />
       <div
-        className="sticky bottom-0 z-10 -mx-screen-x mt-2 bg-background/95 px-screen-x pt-3 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-md bg-background/95 px-screen-x pt-3 backdrop-blur"
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
         <button
