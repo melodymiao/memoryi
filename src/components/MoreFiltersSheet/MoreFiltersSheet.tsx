@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import type { AddedWithin, CardFilters, Facet, Facets } from "../../lib/cardFilters"
-import { priceLabel } from "../../lib/categories"
+import { CATEGORIES, priceLabel, selectedCategoryChipClass } from "../../lib/categories"
 import type { GeoStatus } from "../../lib/useUserLocation"
 
 export interface MoreFiltersSheetProps {
@@ -45,7 +45,8 @@ const toggleText = (list: string[], value: string) =>
  */
 export function MoreFiltersSheet({ facets, filters, onChange, geo, resultCount, onClearAll, onClose }: MoreFiltersSheetProps) {
   const anySelected =
-    filters.locations.length +
+    filters.categories.length +
+      filters.locations.length +
       filters.types.length +
       filters.cuisines.length +
       filters.prices.length +
@@ -90,6 +91,33 @@ export function MoreFiltersSheet({ facets, filters, onChange, geo, resultCount, 
         </div>
 
         <div className="flex flex-col gap-6 overflow-y-auto px-header-x pb-4">
+          <Section title="category">
+            {CATEGORIES.map((cat) => {
+              const selected = filters.categories.includes(cat.slug)
+              return (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  aria-pressed={selected}
+                  title={cat.description}
+                  onClick={() =>
+                    onChange({
+                      categories: selected
+                        ? filters.categories.filter((c) => c !== cat.slug)
+                        : [...filters.categories, cat.slug],
+                    })
+                  }
+                  className={`rounded-pill px-3.5 py-2 text-[12px] ${
+                    selected ? `${selectedCategoryChipClass(cat.slug)} font-bold` : "bg-surface font-semibold text-ink-soft"
+                  }`}
+                >
+                  {selected && <span aria-hidden>{cat.emoji} </span>}
+                  {cat.label}
+                </button>
+              )
+            })}
+          </Section>
+
           <Section title="recently added">
             {ADDED_OPTIONS.map((o) => (
               <button

@@ -249,7 +249,10 @@ function CardDetailView({
   return (
     <div className="flex flex-col gap-6">
       <div className={`flex flex-col gap-3 rounded-card p-5 ${bg} ${fg}`}>
-        <p className="font-display text-[28px] font-bold tracking-[-0.5px]">{card.title}</p>
+        <div className="flex flex-col gap-0.5">
+          <p className="font-display text-[28px] font-bold tracking-[-0.5px]">{card.title}</p>
+          {card.neighborhood && <p className="text-[14px] font-semibold opacity-75">{card.neighborhood}</p>}
+        </div>
         {badges.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {badges.map((badge, i) => (

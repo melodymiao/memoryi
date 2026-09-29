@@ -6,7 +6,7 @@ import { MoreFiltersSheet } from "../components/MoreFiltersSheet"
 import { useCards } from "../data/cards"
 import { collectFacets, EMPTY_FILTERS, filterCards, SORT_OPTIONS, sortCards, type CardFilters, type SortKey } from "../lib/cardFilters"
 import { cardColorFor } from "../lib/cardColor"
-import { CATEGORIES, cardBadges, selectedCategoryChipClass } from "../lib/categories"
+import { CATEGORIES, cardBadges, selectedCategoryChipClass, type CategorySlug } from "../lib/categories"
 import { getEntryPhotoUrls } from "../lib/photos"
 import { useUserLocation } from "../lib/useUserLocation"
 import type { CardStatus } from "../types/database"
@@ -23,6 +23,10 @@ const STATUS_OPTIONS: { value: CardStatus; label: string }[] = [
   { value: "visited", label: "Visited" },
   { value: "wishlist", label: "Unvisited" },
 ]
+
+/** The categories shown in the top filter bar; the full list lives in the more-filters sheet. */
+const TOP_BAR_CATEGORIES: CategorySlug[] = ["food", "cafe", "bars", "dessert", "entertainment", "home"]
+const topBarCategories = TOP_BAR_CATEGORIES.flatMap((slug) => CATEGORIES.filter((c) => c.slug === slug))
 
 const chipBase = "shrink-0 rounded-pill px-3.5 py-2 text-[11.5px] font-semibold"
 
@@ -79,6 +83,7 @@ export function CardsScreen() {
     : "Visit type"
 
   const moreCount =
+    categories.filter((c) => !(TOP_BAR_CATEGORIES as string[]).includes(c)).length +
     filters.locations.length +
     filters.types.length +
     filters.cuisines.length +
@@ -90,6 +95,7 @@ export function CardsScreen() {
 
   function clearMore() {
     patchFilters({
+      categories: [],
       locations: [],
       types: [],
       cuisines: [],
@@ -223,10 +229,10 @@ export function CardsScreen() {
         <div aria-hidden className="h-5 w-px shrink-0 bg-ink-soft/40" />
 
         <div
-          className="flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden"
+          className="-mr-header-x flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 pr-header-x [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
-          {CATEGORIES.map((cat) => {
+          {topBarCategories.map((cat) => {
             const selected = categories.includes(cat.slug)
             return (
               <button
@@ -241,15 +247,14 @@ export function CardsScreen() {
               </button>
             )
           })}
+          <button
+            type="button"
+            onClick={() => setMoreOpen(true)}
+            className={`shrink-0 py-2 pl-1 text-[11.5px] text-accent ${moreCount > 0 ? "font-bold" : "font-semibold"}`}
+          >
+            More filters{moreCount > 0 ? ` · ${moreCount}` : ""}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          className={`shrink-0 py-2 pl-1 text-[11.5px] text-accent ${moreCount > 0 ? "font-bold" : "font-semibold"}`}
-        >
-          More filters{moreCount > 0 ? ` · ${moreCount}` : ""}
-        </button>
       </div>
 
       <div className="px-screen-x pt-2">
@@ -274,6 +279,7 @@ export function CardsScreen() {
             <Card
               key={card.id}
               title={card.title}
+              subtitle={card.neighborhood}
               badges={cardBadges(card, { collapseCategories: true })}
               // Cards with photos reserve the fixed-size photo slot right away;
               // the image fills it once its signed URL arrives.

@@ -25,6 +25,8 @@ export const cardColorClasses: Record<CardColorName, { bg: string; fg: string }>
 export interface CardProps {
   /** Place / post name. */
   title: string
+  /** Plain text under the title, e.g. the neighborhood. */
+  subtitle?: string | null
   color?: CardColorName
   /** Small pill labels below the title, e.g. ["Little Tokyo", "$$", "omakase"]. */
   badges?: string[]
@@ -47,6 +49,7 @@ export interface CardProps {
 
 export function Card({
   title,
+  subtitle,
   color = "wasabi",
   badges = [],
   photoUrl,
@@ -76,7 +79,10 @@ export function Card({
               <p className="text-[8px] font-bold tracking-[0.5px] uppercase">pinned by {pinnedBy}</p>
             </div>
           )}
-          <p className="font-display text-base font-bold">{title}</p>
+          <div className="flex flex-col">
+            <p className="font-display text-base font-bold">{title}</p>
+            {subtitle && <p className="text-[11px] font-semibold opacity-75">{subtitle}</p>}
+          </div>
           {badges.length > 0 && (
             <div className="flex flex-wrap items-start gap-x-1 gap-y-0">
               {badges.map((badge) => (

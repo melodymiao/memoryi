@@ -24,17 +24,16 @@ describe("categories", () => {
     expect(cardCategoryBadges({ categories: [], category: null })).toEqual([])
   })
 
-  it("builds a card's badges: categories, types, price, neighborhood, legacy tags", () => {
+  it("builds a card's badges: categories, types, price, legacy tags (not the neighborhood)", () => {
     expect(
       cardBadges({
         categories: ["food"],
         category: null,
         types: ["omakase"],
         price_level: 3,
-        neighborhood: "Little Tokyo",
         tags: ["date night"],
       }),
-    ).toEqual(["Food", "omakase", "$$$", "Little Tokyo", "date night"])
+    ).toEqual(["Food", "omakase", "$$$", "date night"])
   })
 
   it("formats price levels", () => {
@@ -57,7 +56,6 @@ describe("categories", () => {
       "Food, Entertainment, +1 more",
       "omakase",
       "$$",
-      "Little Tokyo",
     ])
   })
 

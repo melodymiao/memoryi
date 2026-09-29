@@ -87,14 +87,14 @@ export function categorySummary(categories: string[], visible = 2): string | nul
 
 /** Badges for a card. With `collapseCategories` (list cards) the categories
  * become one "Food, Entertainment, +1 more" badge; otherwise each gets its own
- * (detail screen). */
+ * (detail screen). The neighborhood isn't a badge — it's shown as plain text
+ * under the title. */
 export function cardBadges(
   card: {
     categories: string[]
     category: string | null
     types: string[]
     price_level: number | null
-    neighborhood: string | null
     tags: string[]
   },
   { collapseCategories = false }: { collapseCategories?: boolean } = {},
@@ -105,7 +105,7 @@ export function cardBadges(
   return [
     ...categoryBadges,
     ...card.types,
-    ...[priceLabel(card.price_level), card.neighborhood].filter((b): b is string => Boolean(b)),
+    ...[priceLabel(card.price_level)].filter((b): b is string => Boolean(b)),
     ...card.tags,
   ]
 }
