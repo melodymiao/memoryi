@@ -63,6 +63,22 @@ export function CardsIcon(props: IconProps) {
   )
 }
 
+/** Center shuffle button — two crossing arrows. Hand-drawn to match the
+ * other tab icons' stroke weight, not pulled from Figma. */
+export function ShuffleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        d="M2.916 5.833H5.6c1.2 0 2.2.6 2.9 1.6l3 4.5c.7 1 1.7 1.6 2.9 1.6h2.684M14.5 3.5l2.584 2.333L14.5 8.167M2.916 14.167H5.6c1.2 0 2.2-.6 2.9-1.6M11.5 7.433c.7-1 1.7-1.6 2.9-1.6M14.5 11.833l2.584 2.334L14.5 16.5"
+        stroke="currentColor"
+        strokeWidth="1.58"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Icon>
+  )
+}
+
 export function UsIcon(props: IconProps) {
   return (
     <Icon {...props}>

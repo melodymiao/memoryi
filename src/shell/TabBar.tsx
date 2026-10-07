@@ -1,21 +1,40 @@
 import { NavLink } from "react-router-dom"
 import type { ComponentType, SVGProps } from "react"
-import { CalendarIcon, CardsIcon, FeedIcon, UsIcon } from "../assets/icons/tab-icons"
+import { CalendarIcon, CardsIcon, FeedIcon, ShuffleIcon, UsIcon } from "../assets/icons/tab-icons"
 
 /**
  * Bottom tab bar. Figma (drank file, node 1661-6940 "tab-bar"): a floating
- * pill — bg `background`, `shadow-float`, `rounded-tabbar` — with 4 evenly
- * spaced tabs. The active tab gets a filled `ink` circle behind its icon
- * (icon flips to `background`) and a bold label; inactive tabs use
- * `ink-soft` for both.
+ * pill — bg `background`, `shadow-float`, `rounded-tabbar` — with evenly
+ * spaced tabs. The active tab's icon outline goes dark (`ink`) with a bold
+ * label; inactive tabs use `ink-soft` for both. A raised `accent` shuffle
+ * circle floats in the middle slot.
  */
 
-const tabs: { to: string; label: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
+type Tab = { to: string; label: string; icon: ComponentType<SVGProps<SVGSVGElement>> }
+
+const leftTabs: Tab[] = [
   { to: "/", label: "feed", icon: FeedIcon },
   { to: "/calendar", label: "calendar", icon: CalendarIcon },
+]
+const rightTabs: Tab[] = [
   { to: "/cards", label: "cards", icon: CardsIcon },
   { to: "/us", label: "us", icon: UsIcon },
 ]
+
+function TabLink({ to, label, icon: Icon }: Tab) {
+  return (
+    <NavLink to={to} end={to === "/"} className="flex flex-1 flex-col items-center gap-1.5">
+      {({ isActive }) => (
+        <>
+          <span className={`flex size-10 items-center justify-center ${isActive ? "text-ink" : "text-ink-soft"}`}>
+            <Icon className="size-5" />
+          </span>
+          <span className={`text-[10.5px] ${isActive ? "font-bold text-ink" : "font-medium text-ink-soft"}`}>{label}</span>
+        </>
+      )}
+    </NavLink>
+  )
+}
 
 export function TabBar() {
   return (
@@ -25,32 +44,20 @@ export function TabBar() {
       className="fixed inset-x-0 bottom-0 z-10 flex justify-center px-tabbar-x pb-2 standalone:px-0 standalone:pb-0"
     >
       <div className="flex w-full max-w-md items-start justify-center gap-1 rounded-tabbar bg-background px-2 py-2.5 shadow-float standalone:max-w-none standalone:rounded-b-none standalone:pb-[max(10px,calc(env(safe-area-inset-bottom)-22px))] standalone:shadow-[0px_-4px_16px_rgba(20,22,26,0.08)]">
-        {tabs.map(({ to, label, icon: Icon }) => (
+        {leftTabs.map((tab) => (
+          <TabLink key={tab.to} {...tab} />
+        ))}
+        <div className="flex flex-1 justify-center">
           <NavLink
-            key={to}
-            to={to}
-            end={to === "/"}
-            className="flex flex-1 flex-col items-center gap-1.5"
+            to="/shuffle"
+            aria-label="shuffle"
+            className="-mt-8 flex size-[58px] items-center justify-center rounded-pill bg-accent text-on-accent shadow-float ring-4 ring-background"
           >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={`flex size-10 items-center justify-center rounded-pill ${
-                    isActive ? "bg-accent text-on-accent" : "text-ink-soft"
-                  }`}
-                >
-                  <Icon className="size-5" />
-                </span>
-                <span
-                  className={`text-[10.5px] ${
-                    isActive ? "font-bold text-ink" : "font-medium text-ink-soft"
-                  }`}
-                >
-                  {label}
-                </span>
-              </>
-            )}
+            <ShuffleIcon className="size-6" />
           </NavLink>
+        </div>
+        {rightTabs.map((tab) => (
+          <TabLink key={tab.to} {...tab} />
         ))}
       </div>
     </nav>
