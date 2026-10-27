@@ -27,8 +27,8 @@
 do $$
 declare
   v_space uuid := '264f1118-4348-45f7-947e-69fbcb24c97c';
-  mel_override uuid := null; -- paste MEL's auth user id here if needed
-  yic_override uuid := null; -- paste YIC's auth user id here if needed
+  mel_override uuid := 'eb0ba4c1-f0b7-4f11-a853-898cc651e205'; -- paste MEL's auth user id here if needed
+  yic_override uuid := '4e12252d-991f-4299-93fb-90a32ff69445'; -- paste YIC's auth user id here if needed
   mel uuid;
   yic uuid;
   member_count int;
@@ -45,6 +45,16 @@ begin
     end if;
     select user_id into mel from space_members where space_id = v_space order by created_at, id limit 1;
     select user_id into yic from space_members where space_id = v_space order by created_at, id offset 1 limit 1;
+  end if;
+
+  if not exists (select 1 from space_members where space_id = v_space and user_id = mel)
+     or not exists (select 1 from space_members where space_id = v_space and user_id = yic) then
+    raise exception
+      'MEL (%) and YIC (%) must both be space members — insert a space_members row for whichever is missing (see supabase/migrations/README.md).',
+      mel, yic;
+  end if;
+  if mel = yic then
+    raise exception 'mel_override and yic_override are the same id.';
   end if;
 
   -- Profiles ----------------------------------------------------------------
