@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stamp — scrapbook page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&amp;family=Instrument+Serif&amp;display=swap">
+<style>
+body{margin:0;background:#F4F3EA}
+a{color:#28301C}a:hover{color:#444444}
+.perf{display:block;padding:5px;background:radial-gradient(circle, transparent 2.6px, #FFFFFF 3.1px) -4.5px -4.5px / 9px 9px;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.12))}
+.round{width:44px;height:44px;border-radius:50%;border:none;background:#FFFFFF;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.12);cursor:pointer;color:#28301C}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: {{tint}}; font-family: 'Inter Tight', sans-serif; font-weight: 400; color: #28301C">
+
+<div aria-hidden="true" style="position: absolute; inset: 0; background-image: radial-gradient({{ink}} 2px, transparent 2.8px); background-size: 8px 8px; opacity: 0.45"></div>
+<div aria-hidden="true" style="position: absolute; left: 8%; top: 14%; width: 84%; height: 46%; border-radius: 24px; background-image: radial-gradient({{ink}} 3px, transparent 3.8px); background-size: 8px 8px; transform: rotate(-10deg)"></div>
+<div aria-hidden="true" style="position: absolute; left: 30%; top: 30%; width: 34%; height: 18%; border-radius: 50%; background: {{tint}}"></div>
+
+
+<div style="position: absolute; left: 20px; right: 20px; top: 56px; display: flex; justify-content: space-between; align-items: center">
+<a href="Passport.dc.html" class="round" aria-label="Back to Passport">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<button type="button" style="height: 44px; padding: 0 18px 0 14px; border-radius: 999px; border: none; background: #FFFFFF; box-shadow: 0 4px 14px rgba(0,0,0,0.12); cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: inherit; font-size: 15px; color: #28301C">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg>Edit page</button>
+</div>
+
+<div style="position: absolute; left: 12px; right: 12px; bottom: 12px; background: #FFFFFF; border-radius: 28px; padding: 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 -6px 30px rgba(0,0,0,0.10)">
+<div style="display: flex; align-items: center; gap: 16px">
+<div class="perf" style="width: 84px; flex-shrink: 0; transform: rotate(-3deg)">
+<div style="background: #FFFFFF; padding: 4px 4px 5px; display: flex; flex-direction: column; gap: 4px">
+<div style="position: relative; aspect-ratio: 1; overflow: hidden; background: {{tint}}">
+<div style="position: absolute; inset: 0; background-image: radial-gradient({{ink}} 1px, transparent 1.5px); background-size: 4px 4px; opacity: 0.55"></div>
+<div style="position: absolute; left: 18%; top: 22%; width: 64%; height: 56%; border-radius: 6px; background-image: radial-gradient({{ink}} 1.2px, transparent 1.7px); background-size: 4px 4px; transform: rotate(-12deg)"></div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: baseline; color: {{ink}}"><span style="font-family: 'Instrument Serif', serif; font-size: 12px; line-height: 1">SF</span><span style="font-size: 10px; font-weight: 500">#12</span></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">San Francisco</span>
+<span style="font-size: 15px; color: #7E846C">Oct 31 – Nov 2 · 12th time together</span>
+</div>
+</div>
+<div style="border-top: 1px solid #E7EAD6"></div>
+<div style="display: flex; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">Days</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">3</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">Plans done</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">2 / 3</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">Photos</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">18</span></div>
+</div>
+<div style="border-top: 1px solid #E7EAD6"></div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 15px; color: #7E846C">Note</span>
+<span style="font-size: 15px; line-height: 1.4">[A line about the trip: Tartine was worth the line]</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { ink: '#28301C', tint: '#FFC3CC' };
+}
+}
+</script>
+</body>
+</html>

@@ -1,61 +1,139 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — pulled from Figma (drank file, node 1661-6796 "Card component +
- * color palette" and the screen frames under 1614-984). See THEME.md for the full
- * writeup of where each value comes from and how to extend this palette.
+ * Design tokens — from docs/DESIGN.md (names match it exactly) and the
+ * inline styles in docs/design-reference/*.html, which win when the two
+ * disagree. Mirrored for JS in src/tokens.ts.
  *
- * Tailwind v4 turns every var below into real utility classes automatically:
- * --color-ink        -> bg-ink / text-ink / border-ink
- * --font-display      -> font-display
+ * Tailwind v4 turns every var below into utility classes:
+ * --color-ink         -> bg-ink / text-ink / border-ink
+ * --color-text-muted  -> text-text-muted
+ * --text-title        -> text-title (size + line height + tracking)
+ * --font-pixel        -> font-pixel
  * --radius-card       -> rounded-card
  * --spacing-screen-x  -> px-screen-x
- * --shadow-float      -> shadow-float
+ * --shadow-tabbar     -> shadow-tabbar
+ *
+ * Components use these utilities (or var(--color-…) in inline styles) —
+ * never raw hex values.
  */
 /* Matches when launched from the home screen (no browser chrome). */
 @custom-variant standalone (@media (display-mode: standalone));
 
 @theme {
-  /* Neutrals (app chrome: backgrounds, primary/secondary text) */
-  --color-background: #fffbf5;
-  --color-surface: #f5efe4;
-  --color-ink: #422f0e;
-  --color-ink-soft: #a6a69e;
+  /* Color */
+  --color-ink: #28301c;
+  --color-lime: #d2db76;
+  --color-pink: #ffc3cc;
+  --color-bg: #f4f3ea;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef1e0;
+  --color-divider: #e7ead6;
+  --color-line: #c5cba8;
+  --color-line-strong: #b9c09a;
+  --color-text-muted: #7e846c;
+  --color-icon-muted: #5c6450;
+  --color-on-dark-muted: #b3ba8c;
+  --color-flap: #3a4428;
+  --color-flap-seam: #1a2012;
 
-  /* Accent (active filter pills, primary actions) */
-  --color-accent: #3d202b;
-  --color-accent-soft: #c29cac;
-  /* Text/icons on top of `accent` fills — higher contrast than accent-soft. */
-  --color-on-accent: #dfd4d9;
+  /* Fonts (self-hosted via @fontsource, imported in src/main.tsx) */
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: "Doto", ui-monospace, monospace;
+  --font-serif: "Instrument Serif", ui-serif, serif;
 
-  /* Card color variants — each pairs a background with its own foreground text
-     color, tuned per-swatch for contrast rather than one fixed ink color. */
-  --color-wasabi: #e0e939;
-  --color-wasabi-fg: #484800;
-  --color-cool-blue: #ceeaf5;
-  --color-cool-blue-fg: #32586a;
-  --color-sage: #adb9a2;
-  --color-sage-fg: #2f3a27;
-  --color-orange: #ff663a;
-  --color-orange-fg: #841200;
-
-  /* Type */
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Type scale */
+  --text-hero: 44px;
+  --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.035em;
+  --text-display: 40px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-title: 26px;
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.02em;
+  --text-temp: 20px;
+  --text-temp--line-height: 1.1;
+  --text-temp--letter-spacing: -0.01em;
+  --text-body: 15px;
+  --text-body--line-height: 1.3;
+  --text-small: 13px;
+  --text-small--line-height: 1.3;
+  /* Pixel sizes — pair with font-pixel (see PixelText). */
+  --text-pixel: 16px;
+  --text-pixel--line-height: 1;
+  --text-pixel-label: 13px;
+  --text-pixel-label--line-height: 1;
+  --text-pixel-xl: 44px;
+  --text-pixel-xl--line-height: 1;
 
   /* Radii */
-  --radius-card: 24px;
-  --radius-photo: 16px;
-  --radius-pill: 9999px;
-  --radius-tabbar: 30px;
+  --radius-card: 28px;
+  --radius-banner: 16px;
+  --radius-board: 24px;
+  --radius-pill: 999px;
+  --radius-song: 16px;
+  --radius-thumb: 7px;
+  --radius-flap-sm: 4px;
+  --radius-flap-lg: 8px;
 
-  /* One-off spacings that don't line up with the default 4px scale */
-  --spacing-screen-x: 18px;
-  --spacing-header-x: 22px;
-  --spacing-tabbar-x: 14px;
+  /* Spacing */
+  --spacing-screen-x: 20px;
+  /* Gap below the status bar. The status bar style is "default" (index.html),
+     so the page already starts below it and safe-area-inset-top is 0. */
+  --spacing-screen-top: 12px;
+  --spacing-tabbar-gap: 24px;
+  --spacing-tabbar-h: 64px;
 
-  /* Elevation */
-  --shadow-float: 0px 10px 17px rgba(20, 22, 26, 0.13), 0px 2px 3px rgba(20, 22, 26, 0.05);
+  /* Shadows */
+  --shadow-tabbar: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-stack: 0 -6px 16px rgba(0, 0, 0, 0.07);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.2);
+  /* Round white buttons on top of photos (StampDetail.html). */
+  --shadow-button: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* Scalloped stamp edge: a white field with circles punched out along the
+   border (`.perf` in Passport.html). */
+@utility stamp-perf {
+  padding: 5px;
+  background: radial-gradient(circle, transparent 2.6px, var(--color-surface) 3.1px) -4.5px -4.5px / 9px 9px;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.08));
+}
+
+/* The smaller stamp on StampDetail sits on a photo and uses a darker shadow. */
+@utility stamp-perf-raised {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.12));
+}
+
+/* The horizontal seam across a split-flap tile (`.tick` / `.flap`). */
+@utility flap-seam-sm {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--color-flap-seam);
+  }
+}
+
+@utility flap-seam-lg {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--color-flap-seam);
+  }
 }
 
 @layer base {
@@ -75,9 +153,12 @@
 
   body {
     margin: 0;
-    background: var(--color-background);
+    background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
   }
 
   #root {

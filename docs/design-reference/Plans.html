@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plans</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&amp;family=Instrument+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F4F3EA}
+a{color:#28301C}a:hover{color:#444444}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:0 20px}
+.chips::-webkit-scrollbar{display:none}
+.opt{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 4px;border:none;background:transparent;font-family:inherit;font-size:15px;color:#28301C;cursor:pointer;text-align:left}
+.tool{width:44px;height:44px;border-radius:50%;border:none;background:#EEF1E0;color:#28301C;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 1440px; box-sizing: border-box; position: relative; overflow: hidden; background: #F4F3EA; font-family: 'Inter Tight', 'Instrument Sans', sans-serif; font-weight: 400; color: #28301C; padding: 64px 20px 0; display: flex; flex-direction: column; gap: 20px">
+
+<h1 style="margin: 0 0 4px 2px; display: flex; flex-direction: column; font-size: 44px; font-weight: 400; line-height: 1.02; letter-spacing: -0.035em"><span>做啥呢</span></h1>
+
+<div style="position: relative">
+<div class="chips" role="group" aria-label="Filters">
+<button type="button" onClick="{{toggleLoc}}" aria-expanded="{{locExpanded}}" aria-haspopup="true" style="flex-shrink: 0; height: 44px; padding: 0 14px 0 18px; border-radius: 999px; border: none; background: {{locBg}}; color: {{locFg}}; font-family: inherit; font-size: 15px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>{{locLabel}}
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+<div style="width: 1px; flex-shrink: 0; margin: 10px 2px; background: #C5CBA8"></div>
+<sc-for list="{{typeChips}}" as="c" hint-placeholder-count="6">
+<button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="flex-shrink: 0; height: 44px; padding: 0 18px; border-radius: 999px; border: none; background: {{c.bg}}; color: {{c.fg}}; font-family: inherit; font-size: 15px; cursor: pointer; white-space: nowrap">{{c.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{locOpen}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 52px; left: 0; width: 250px; z-index: 5; background: #FFFFFF; border-radius: 22px; padding: 10px 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.14); display: flex; flex-direction: column">
+<span style="font-size: 13px; color: #7E846C; padding: 6px 4px 2px">Location</span>
+<sc-for list="{{locOpts}}" as="o" hint-placeholder-count="5">
+<button type="button" class="opt" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}"><span>{{o.label}}</span><sc-if value="{{o.on}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#28301C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if></button>
+</sc-for>
+<div style="border-top: 1px solid #E7EAD6; margin: 6px 0"></div>
+<span style="font-size: 13px; color: #7E846C; padding: 2px 4px 2px">Distance from you</span>
+<sc-for list="{{distOpts}}" as="o" hint-placeholder-count="4">
+<button type="button" class="opt" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}"><span>{{o.label}}</span><sc-if value="{{o.on}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#28301C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; color: #7E846C; padding-left: 2px">{{g.label}}</span>
+<div style="background: #FFFFFF; border-radius: 28px; padding: 4px 22px; display: flex; flex-direction: column">
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="5">
+<div style="display: flex; align-items: flex-start; gap: 12px; padding: 15px 0; border-bottom: {{it.border}}">
+<button type="button" onClick="{{it.toggle}}" aria-label="{{it.aria}}" aria-pressed="{{it.pressed}}" style="width: 44px; height: 44px; margin: -11px -11px -11px -11px; flex-shrink: 0; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0">
+<span style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid {{it.ring}}; background: {{it.fill}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{it.added}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#28301C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
+<sc-if value="{{it.notAdded}}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7E846C" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></sc-if>
+</span>
+</button>
+<div style="flex: 1; min-width: 0; margin-left: 12px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 15px; line-height: 1.35">{{it.name}}<sc-if value="{{it.hasFav}}" hint-placeholder-val="{{ false }}"><svg role="img" aria-label="{{it.favLabel}}" width="13" height="13" viewBox="0 0 24 24" fill="{{it.favColor}}" stroke="#28301C" stroke-width="1.6" stroke-linejoin="round" style="margin-left: 6px; vertical-align: -1px"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 4.3 2.4.8-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"></path></svg></sc-if></span>
+<sc-if value="{{it.hasAddr}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.3; color: #7E846C">{{it.addr}}</span></sc-if>
+<sc-if value="{{it.hasDate}}" hint-placeholder-val="{{ false }}">
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; font-size: 13px; line-height: 1.3">
+<span style="display: inline-flex; align-items: center; gap: 5px; background: #EEF1E0; border-radius: 999px; padding: 4px 9px 4px 8px; color: #28301C">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>{{it.date}}</span>
+<span style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 4px 9px; background: {{it.tripBg}}; color: #28301C">{{it.tripNote}}</span>
+</span>
+</sc-if>
+</div>
+<sc-if value="{{it.hasLink}}" hint-placeholder-val="{{ false }}">
+<a href="#" aria-label="{{it.linkLabel}}" style="width: 44px; height: 44px; margin: -11px -12px -11px 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #7E846C">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></a>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border-radius: 28px; padding: 24px 22px; font-size: 15px; color: #7E846C">Nothing here yet. Try a wider distance or another filter.</div>
+</sc-if>
+
+<sc-if value="{{notComposing}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{openComposer}}" style="position: absolute; right: 20px; bottom: 104px; z-index: 4; height: 52px; padding: 0 22px 0 18px; border-radius: 999px; border: none; background: #28301C; color: #FFFFFF; font-family: inherit; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2)">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>New idea</button>
+</sc-if>
+
+<sc-if value="{{composing}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 12px; right: 12px; bottom: 100px; z-index: 6; background: #FFFFFF; border-radius: 28px; padding: 18px 18px 16px; box-shadow: 0 -6px 30px rgba(0,0,0,0.16); display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: flex-start; gap: 12px">
+<span style="width: 22px; height: 22px; margin-top: 1px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid #C5CBA8; flex-shrink: 0"></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+<label for="idea-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Idea name</label>
+<input id="idea-name" type="text" placeholder="New idea" style="border: none; outline: none; padding: 0; font-family: inherit; font-size: 17px; color: #28301C; background: transparent">
+<label for="idea-note" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Note or link</label>
+<input id="idea-note" type="text" placeholder="Add note or paste a link" style="border: none; outline: none; padding: 0; font-family: inherit; font-size: 15px; color: #28301C; background: transparent">
+</div>
+<button type="button" onClick="{{closeComposer}}" aria-label="Close" style="width: 44px; height: 44px; margin: -12px -12px 0 0; border: none; background: transparent; cursor: pointer; color: #7E846C; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; padding-left: 34px">
+<button type="button" class="tool" aria-label="Add a date or season"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg></button>
+<button type="button" class="tool" aria-label="Add a location"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></button>
+<button type="button" class="tool" aria-label="Add a source link"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></button>
+<button type="button" class="tool" aria-label="Favorite"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 4.3 2.4.8-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"></path></svg></button>
+<button type="button" class="tool" aria-label="Add a photo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
+<button type="button" onClick="{{closeComposer}}" style="margin-left: auto; height: 44px; padding: 0 18px; border-radius: 999px; border: none; background: #28301C; color: #FFFFFF; font-family: inherit; font-size: 15px; cursor: pointer">Add</button>
+</div>
+</div>
+</sc-if>
+
+<nav style="position: absolute; left: 20px; right: 20px; bottom: 24px; height: 64px; background: #FFFFFF; border-radius: 999px; display: flex; align-items: center; justify-content: space-around; box-shadow: 0 4px 20px rgba(0,0,0,0.06); font-family: 'Instrument Sans', system-ui, sans-serif; z-index: 3">
+<a href="Main.dc.html" aria-label="Home" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #5C6450">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20M13 5l7 7-7 7M6 12l-2-4M6 12l-2 4"></path></svg></a>
+<a href="Trips.dc.html" aria-label="Trips" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #5C6450">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"></path><path d="M14 6v12" stroke-dasharray="2 2"></path></svg></a>
+<a href="Plans.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border-radius: 999px; background: #28301C; color: #FFFFFF; font-family: 'Inter Tight', sans-serif; font-size: 15px; font-weight: 400; letter-spacing: -0.01em">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg>Plans</a>
+<a href="Passport.dc.html" aria-label="Passport" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #5C6450">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><circle cx="12" cy="10" r="3"></circle><path d="M9 16h6"></path></svg></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D2DB76","options":["#D2DB76","#FFC3CC","#28301C"]},"$preview":{"width":390,"height":1440}}'>
+const TRIP_WINDOWS = [
+{ label: 'Nov 13 trip', loc: 'LA', s: new Date(2026, 10, 13), e: new Date(2026, 10, 16) },
+{ label: 'Dec 5 trip', loc: 'Bay', s: new Date(2026, 11, 5), e: new Date(2026, 11, 8) }
+];
+const IDEAS = [
+{ n: 'Tartine', loc: 'Bay', type: 'Eat', addr: '600 Guerrero St, San Francisco', mi: 3, link: true, fav: 'me' },
+{ n: 'Dolores Park picnic', loc: 'Bay', type: 'Do', mi: 3 },
+{ n: 'Lands End trail', loc: 'Bay', type: 'Do', addr: '680 Point Lobos Ave, San Francisco', mi: 8, link: true, fav: 'him' },
+{ n: 'Ferry Building', loc: 'Bay', type: 'Eat', addr: '1 Ferry Building, San Francisco', mi: 2 },
+{ n: '[Holiday light walk we saw on TikTok]', loc: 'Bay', type: 'Do', mi: 12, link: true, date: 'Nov 20 – Jan 4', s: new Date(2026, 10, 20), e: new Date(2027, 0, 4) },
+{ n: 'Griffith Observatory', loc: 'LA', type: 'Go', addr: '2800 E Observatory Rd, Los Angeles', mi: 340, fav: 'me' },
+{ n: 'Grand Central Market', loc: 'LA', type: 'Eat', addr: '317 S Broadway, Los Angeles', mi: 340, link: true },
+{ n: 'Venice canals walk', loc: 'LA', type: 'Do', mi: 345 },
+{ n: 'The Broad', loc: 'LA', type: 'Go', addr: '221 S Grand Ave, Los Angeles', mi: 340 },
+{ n: '[Ramen place]', loc: 'LA', type: 'Eat', mi: 340, link: true, fav: 'him' },
+{ n: '[Record store]', loc: 'LA', type: 'Go', mi: 340 },
+{ n: '[Concert we both want to see]', loc: 'LA', type: 'Do', mi: 340, link: true, date: 'Sat, Dec 5', s: new Date(2026, 11, 5), e: new Date(2026, 11, 5) },
+{ n: 'Balboa Park', loc: 'SD', type: 'Do', mi: 450 },
+{ n: 'La Jolla Cove', loc: 'SD', type: 'Go', mi: 455, fav: 'me' },
+{ n: 'Cabin weekend in Big Sur, somewhere with a hot tub and no wifi', loc: 'Anywhere', type: 'Stay', mi: 140, link: true, date: 'Spring', seasonal: true }
+];
+const LOCS = ['All places', 'Bay', 'LA', 'SD', 'Anywhere'];
+const DISTS = [['Any distance', 0], ['Within 5 mi', 5], ['Within 15 mi', 15], ['Within 50 mi', 50]];
+const TYPES = ['All', 'Eat', 'Do', 'Go', 'Stay', 'Events'];
+
+function tripFor(i) {
+if (i.seasonal) return { note: 'Seasonal · no trip yet', ok: false };
+const hit = TRIP_WINDOWS.find((t) => t.loc === i.loc && i.s <= t.e && i.e >= t.s);
+return hit ? { note: 'During ' + hit.label, ok: true } : { note: 'No trip booked', ok: false };
+}
+
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { loc: 'All places', dist: 0, type: 'All', locOpen: false, composing: false, added: { '[Ramen place]': true, 'Griffith Observatory': true } };
+}
+renderVals() {
+const st = this.state;
+const accent = this.props.accent ?? '#D2DB76';
+const list = IDEAS.filter((i) =>
+(st.loc === 'All places' || i.loc === st.loc) &&
+(st.dist === 0 || i.mi <= st.dist) &&
+(st.type === 'All' || (st.type === 'Events' ? !!i.date : i.type === st.type)));
+const toItem = (i, idx, arr) => {
+const added = !!st.added[i.n];
+const trip = i.date ? tripFor(i) : null;
+return {
+name: i.n,
+added: added, notAdded: !added,
+pressed: added ? 'true' : 'false',
+aria: (added ? 'Remove ' : 'Add ') + i.n + (added ? ' from next trip' : ' to next trip'),
+ring: added ? accent : '#C5CBA8', fill: added ? accent : 'transparent',
+border: idx === arr.length - 1 ? 'none' : '1px solid #E7EAD6',
+hasFav: !!i.fav, favColor: i.fav === 'him' ? '#D2DB76' : '#FFC3CC', favLabel: i.fav === 'him' ? 'His favorite' : 'Your favorite',
+hasAddr: !!i.addr, addr: i.addr || '',
+hasDate: !!i.date, date: i.date || '',
+tripNote: trip ? trip.note : '', tripBg: trip && trip.ok ? accent : '#EEF1E0',
+hasLink: !!i.link, linkLabel: 'Open source link for ' + i.n,
+toggle: () => this.setState({ added: Object.assign({}, st.added, { [i.n]: !added }) })
+};
+};
+const pinned = list.filter((i) => st.added[i.n]);
+const rest = list.filter((i) => !st.added[i.n]);
+const groups = [];
+if (pinned.length) groups.push({ label: 'On your next trip', items: pinned.map(toItem) });
+if (rest.length) groups.push({ label: pinned.length ? 'All ideas' : 'Tap + to add to your next trip', items: rest.map(toItem) });
+
+const filtered = st.loc !== 'All places' || st.dist !== 0;
+const distLabel = (DISTS.find((d) => d[1] === st.dist) || DISTS[0])[0];
+const locLabel = st.dist ? (st.loc === 'All places' ? '' : st.loc + ' · ') + distLabel.replace('Within ', '≤ ') : st.loc;
+return {
+count: String(list.length),
+locLabel: locLabel,
+locBg: filtered ? '#28301C' : '#FFFFFF', locFg: filtered ? '#FFFFFF' : '#28301C',
+locOpen: st.locOpen, locExpanded: st.locOpen ? 'true' : 'false',
+toggleLoc: () => this.setState({ locOpen: !st.locOpen }),
+locOpts: LOCS.map((l) => ({ label: l, on: st.loc === l, pressed: st.loc === l ? 'true' : 'false', pick: () => this.setState({ loc: l, locOpen: false }) })),
+distOpts: DISTS.map((d) => ({ label: d[0], on: st.dist === d[1], pressed: st.dist === d[1] ? 'true' : 'false', pick: () => this.setState({ dist: d[1], locOpen: false }) })),
+typeChips: TYPES.map((t) => ({ label: t, pressed: st.type === t ? 'true' : 'false', bg: st.type === t ? '#28301C' : '#FFFFFF', fg: st.type === t ? '#FFFFFF' : '#28301C', pick: () => this.setState({ type: t }) })),
+groups: groups,
+empty: list.length === 0,
+composing: st.composing, notComposing: !st.composing,
+openComposer: () => this.setState({ composing: true, locOpen: false }),
+closeComposer: () => this.setState({ composing: false })
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+> **Superseded.** This describes the old memoryi design (drank Figma file). The current design system is `docs/DESIGN.md` + `docs/design-reference/`, implemented in `src/index.css`. Kept for history only.
+
 # Design system
 
 Source of truth: `src/index.css` (`@theme` block, generates Tailwind utilities).

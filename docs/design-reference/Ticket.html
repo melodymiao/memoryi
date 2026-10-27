@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticket</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@800&amp;family=Inter+Tight:wght@400&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; box-sizing: border-box; background: #FFFFFF; border-radius: 28px; padding: 24px 22px; display: flex; flex-direction: column; gap: 22px; font-family: 'Inter Tight', 'Instrument Sans', sans-serif; font-weight: 400; color: #28301C; text-align: left">
+<div style="display: flex; justify-content: space-between; font-size: 15px; line-height: 1.2"><span>{{t.airline}}</span><span style="color: #7E846C">{{t.date}}</span></div>
+<div style="display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start">
+<div style="display: flex; flex-direction: column; font-size: 40px; line-height: 1.05; letter-spacing: -0.03em"><span>{{t.from}}</span><span style="color: #7E846C">{{t.depart}}</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 14px">
+<div style="display: flex; align-items: center; gap: 6px; align-self: stretch"><div style="flex: 1; height: 0; border-top: 2px dashed #C5CBA8"></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#28301C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20M13 5l7 7-7 7M6 12l-2-4M6 12l-2 4"></path></svg><div style="flex: 1; height: 0; border-top: 2px dashed #C5CBA8"></div></div>
+<span style="font-size: 15px; color: #7E846C">{{t.miles}}</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-size: 40px; line-height: 1.05; letter-spacing: -0.03em"><span>{{t.to}}</span><span style="color: #7E846C">{{t.arrive}}</span></div>
+</div>
+<div style="border-top: 1px solid #E7EAD6"></div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">Passenger</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">{{t.passenger}}</span></div>
+<sc-if value="{{t.past}}" hint-placeholder-val="{{ false }}">
+<span style="font-family: 'Doto', monospace; font-weight: 800; font-size: 15px; color: #7E846C; border: 2px solid #C5CBA8; border-radius: 8px; padding: 4px 8px; transform: rotate(-8deg)">USED</span>
+</sc-if>
+</div>
+<div style="border-top: 1px solid #E7EAD6"></div>
+<div style="display: flex; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">Lands</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">{{t.arrive}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">{{t.to}} term</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">{{t.term}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; color: #7E846C">{{t.to}} gate</span><span style="font-size: 26px; line-height: 1.1; letter-spacing: -0.02em">{{t.gate}}</span></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"trip":{"editor":null},"$preview":{"width":350,"height":370}}'>
+class Component extends DCLogic {
+renderVals() {
+const sample = { airline: 'Southwest', date: 'Fri, Nov 13', from: 'SFO', depart: '09:30', to: 'LAX', arrive: '11:05', miles: '337 mi', passenger: 'Melody', term: '1', gate: '12', past: false };
+return { t: this.props.trip ?? sample };
+}
+}
+</script>
+</body>
+</html>

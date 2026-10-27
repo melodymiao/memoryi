@@ -60,6 +60,10 @@ People are shown by short codes (e.g. **MEL**, **YIC**), not names or profile ph
   - "Upcoming" means `visit_end` is today or later, using the device's local date. A visit you're currently on counts as the next trip.
   - Passport stats count visits that have started by today. Days together counts distinct days across visits, with both the first and last day included.
 - **Sample data**: MEL is San Francisco (SFO), YIC is San Diego (SAN), and the trips are SFO ↔ LAX.
+- **Navigation**: four tabs (Home, Trips, Plans, Passport) plus a stamp page at `/passport/stamps/:tripId` with no tab bar. Old memoryi URLs (`/cards`, `/shuffle`, …) redirect to Home.
+- **Component gallery**: `/dev/ui` exists only in development (`npm run dev`). It isn't in the deployed app.
+- **Status bar**: iOS's `default` style, with dark text on a status bar iOS draws above the page, rather than a translucent one over the content.
+- **Fonts**: self-hosted and loaded only for the latin character set (English plus accented letters), so they work offline. Chinese text such as 做啥呢 uses the phone's system font.
 
 ## Out of scope for now
 Card shuffle/swipe from the old app; home-screen widgets; automatic "now playing".

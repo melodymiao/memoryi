@@ -6,7 +6,7 @@ Already done from memoryi: PWA scaffold (Vite, manifest, service worker, icons, 
 
 ## Steps
 
-- [ ] **1. Design system + tab shell**: tokens from `docs/DESIGN.md` (palette, Inter Tight / Doto type scale, radii); shared components (Card, DarkBanner, SplitFlapDigits, Chip, DashedRoute, PerforatedStamp); 4-tab bottom nav (Home, Trips, Plans, Passport) with empty screens. Remove the old memoryi tabs and screens.
+- [x] **1. Design system + tab shell**: tokens from `docs/DESIGN.md` (palette, Inter Tight / Doto type scale, radii); shared components (Card, DarkBanner, SplitFlapDigits, Chip, DashedRoute, PerforatedStamp); 4-tab bottom nav (Home, Trips, Plans, Passport) with empty screens. Remove the old memoryi tabs and screens.
 - [x] **2. Schema + data layer**: new tables (trips, ideas, idea_favorites, trip_plans, postcards, statuses, favorite_songs), profile fields (display code, home city/airport/lat-lng), `entries.trip_id`, postcard bucket, `can_view_postcard()` unlock rule, configurable postcard lifetime, passport stats view, `src/data/` hooks, seed file. Create or refresh `SCHEMA.md`.
 - [ ] **3. Trips (sample data)**: Ticket component (pickup info only), countdown banner, month calendar with prev/next (selected trip lime, others pink), collapsible trip plans, past-ticket stack that swaps into the main view.
 - [ ] **4. Flight lookup**: Supabase edge function: flight number + date → airline, times, arrival terminal/gate, status (AeroDataBox or Aviationstack). Add/edit flight sheet. Gate shows "TBA" until known.
@@ -20,6 +20,30 @@ Already done from memoryi: PWA scaffold (Vite, manifest, service worker, icons, 
 ## Session log
 
 <!-- Claude Code: add an entry per session: date, step, what changed, files touched, open questions. -->
+
+### 2026-10-27 — Step 1: design system + tab shell
+**Changed**
+- **Tokens:** `src/index.css` `@theme` was rewritten with every DESIGN.md token (colors, type scale, fonts, radii, shadows, spacing). The old memoryi palette is gone. `src/tokens.ts` now mirrors the new tokens.
+- **Fonts:** self-hosted with `@fontsource/inter-tight` (400, 500), `@fontsource/doto` (800) and `@fontsource/instrument-serif` (400), latin subset, imported in `src/main.tsx`. The Google Fonts tags were removed from `index.html`.
+- **Shared components:** `src/components/ui/` has `TabBar`, `Card`, `DarkBanner`, `PixelText`, `SplitFlap`, `Chip`, `SectionHeader`, `DashedRoute`, `PerforatedStamp` and `icons.tsx` (every reference icon; the heart has pink/lime fills).
+- **Helpers:** `src/lib/flap.ts` (`toFlapTiles`) and `src/lib/cityTint.ts`, both with tests.
+- **Shell:** `src/shell/AppShell.tsx` was rewritten, and `src/shell/Screen.tsx` is new (safe areas, tab-bar clearance).
+- **Routes:** `/`, `/trips`, `/plans`, `/passport` and `/passport/stamps/:tripId` (no tab bar) now go to placeholder screens. `/dev/ui` is a dev-only component gallery (`src/dev/UiGallery.tsx`). Any other path redirects to `/`.
+- **Unrouted, files kept:** `FeedScreen`, `CalendarScreen`, `CardsScreen`, `AddCardScreen`, `CardDetailScreen`, `UsScreen`, `ShuffleScreen`, and the old components only they use (`src/components/Card`, `CardForm`, `CategoryPicker`, `ConfirmDialog`, `MoreFiltersSheet`). They render unstyled now that the old tokens are gone.
+- **Deleted:** the old tab bar, `src/shell/TabBar.tsx`. It was last in commit `6fdf1a4` ("shuffle page"); restore it with `git show 6fdf1a4:src/shell/TabBar.tsx`. Its icons are still in `src/assets/icons/tab-icons.tsx`.
+- **`index.html`:** status bar style is `default`; `theme-color` and the manifest colors are now `bg`.
+- **Deep links:** `vercel.json` at the repo root and in `public/` (so it also ends up in `dist/`) rewrites every path to `/index.html`.
+- **`THEME.md`:** marked as superseded by `docs/DESIGN.md`.
+
+**Verified**
+- `npm test` (103 passing), `npm run lint` and `npm run build`.
+- The production build doesn't contain the gallery and makes no `fonts.googleapis.com` requests. The fonts are bundled (Doto is inlined into the CSS because it's under 4 KB).
+- **Not yet checked on a phone.**
+
+**Open questions**
+- The top padding (safe area + 12px under the `default` status bar) needs checking against the design on a real phone.
+- The app name, title and icon are still "memoryi" (step 10).
+- iOS caches the status bar style and colors at install, so the home-screen app needs to be deleted and added again to see them.
 
 ### 2026-10-27 — Step 2: schema + data layer
 **Changed**

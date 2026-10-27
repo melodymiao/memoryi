@@ -2,6 +2,12 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { registerSW } from "virtual:pwa-register"
 import { App } from "./App"
+// Self-hosted fonts (latin subset only), precached by the service worker so the
+// app renders offline. No Google Fonts requests at runtime.
+import "@fontsource/inter-tight/latin-400.css"
+import "@fontsource/inter-tight/latin-500.css"
+import "@fontsource/doto/latin-800.css"
+import "@fontsource/instrument-serif/latin-400.css"
 import "./index.css"
 
 createRoot(document.getElementById("root")!).render(
