@@ -77,4 +77,10 @@ Two-tone headings: the first words in `ink`, the rest in `text-muted`, same size
 - **SectionHeader**: two-tone `title`, with an optional right-side action (link or chevron).
 - **DashedRoute**: dashed `line` rule, plane icon, dashed rule, and an optional caption below ("412 mi").
 - **PerforatedStamp**: white scalloped edge (radial-gradient mask; see `.perf` in Passport.html), a halftone image area in the city tint, the city in Instrument Serif, and dates + #number.
-- **Ticket**: see Ticket.html. Built in step 3, not step 1.
+- **Ticket** (`src/components/ui/Ticket.tsx`, step 3): see Ticket.html. Times are **24-hour** ("16:20"), in the airport's own time zone, as on a flight board. Unknown time "--:--", unknown terminal/gate "TBA". `variant="strip"` is the 72px airline + date version used in the past-ticket stack.
+
+## Trips tab notes (step 3)
+- Countdown route text ("SFO ✈ LAX") is `small` at weight 400, white, with a `lime` plane. The 600 weight in Trips.html is a leftover; weights here win.
+- The countdown banner keeps a 48px minimum height so it doesn't change size between "LANDING IN [09] DAYS" and the text-only states.
+- The calendar has no "today" marker (Trips.html has none). Days before today are `text-muted`.
+- Trips uses the same top padding as every other tab (`Screen`), even though Trips.html starts at 56px instead of 64px, so headings don't jump between tabs.

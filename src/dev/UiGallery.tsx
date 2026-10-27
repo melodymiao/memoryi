@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react"
 import { Screen } from "../shell/Screen"
 import { cityTint } from "../lib/cityTint"
+import { CountdownBanner } from "../components/trips/CountdownBanner"
+import type { Trip } from "../types/database"
 import {
   ArrowRightIcon,
   BookmarkIcon,
@@ -28,6 +30,7 @@ import {
   SectionHeader,
   SplitFlap,
   SunIcon,
+  Ticket,
   TicketIcon,
 } from "../components/ui"
 
@@ -59,6 +62,30 @@ const TYPE = [
   ["body", "text-body", "Lands End trail"],
   ["small", "text-small", "680 Point Lobos Ave"],
 ] as const
+
+const SAMPLE_TRIP: Trip = {
+  id: "sample",
+  space_id: "s",
+  traveler_user_id: "u",
+  airline: "Southwest Airlines",
+  flight_number: "WN 1645",
+  flight_date: "2026-10-31",
+  origin_code: "SFO",
+  dest_code: "LAX",
+  dest_city: "Los Angeles",
+  depart_at: "2026-10-31T16:20:00-07:00",
+  arrive_at: "2026-10-31T17:45:00-07:00",
+  arrival_terminal: "1",
+  arrival_gate: "9",
+  flight_status: "on time",
+  flight_data_updated_at: null,
+  visit_start: "2026-10-31",
+  visit_end: "2026-11-02",
+  miles: 337,
+  created_by: "u",
+  created_at: "2026-09-01T00:00:00Z",
+}
+const TBA_TRIP: Trip = { ...SAMPLE_TRIP, id: "tba", arrival_gate: null, arrival_terminal: null, depart_at: null, arrive_at: null }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -234,6 +261,22 @@ export default function UiGallery() {
           <PerforatedStamp size="sm" city="Los Angeles" shortLabel="LA" number={11} tint="lime" tilt={-3} />
           <PerforatedStamp size="sm" city="San Diego" shortLabel="SD" number={7} tint="on-dark-muted" tilt={-3} />
         </div>
+      </Section>
+
+      <Section title="Trips · CountdownBanner">
+        <CountdownBanner countdown={{ kind: "days", days: 9, trip: SAMPLE_TRIP }} />
+        <CountdownBanner countdown={{ kind: "today", trip: SAMPLE_TRIP }} />
+        <CountdownBanner countdown={{ kind: "together" }} />
+        <CountdownBanner countdown={{ kind: "none" }} />
+      </Section>
+
+      <Section title="Trips · Ticket">
+        <Ticket trip={SAMPLE_TRIP} passenger="MEL" />
+        <Ticket trip={SAMPLE_TRIP} passenger="YIC" used />
+        <div className="overflow-hidden rounded-card shadow-stack">
+          <Ticket trip={SAMPLE_TRIP} passenger="MEL" variant="strip" />
+        </div>
+        <Ticket trip={TBA_TRIP} passenger="MEL" />
       </Section>
 
       <Section title="Icons">

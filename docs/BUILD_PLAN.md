@@ -8,7 +8,7 @@ Already done from memoryi: PWA scaffold (Vite, manifest, service worker, icons, 
 
 - [x] **1. Design system + tab shell**: tokens from `docs/DESIGN.md` (palette, Inter Tight / Doto type scale, radii); shared components (Card, DarkBanner, SplitFlapDigits, Chip, DashedRoute, PerforatedStamp); 4-tab bottom nav (Home, Trips, Plans, Passport) with empty screens. Remove the old memoryi tabs and screens.
 - [x] **2. Schema + data layer**: new tables (trips, ideas, idea_favorites, trip_plans, postcards, statuses, favorite_songs), profile fields (display code, home city/airport/lat-lng), `entries.trip_id`, postcard bucket, `can_view_postcard()` unlock rule, configurable postcard lifetime, passport stats view, `src/data/` hooks, seed file. Create or refresh `SCHEMA.md`.
-- [ ] **3. Trips (sample data)**: Ticket component (pickup info only), countdown banner, month calendar with prev/next (selected trip lime, others pink), collapsible trip plans, past-ticket stack that swaps into the main view.
+- [x] **3. Trips (sample data)**: Ticket component (pickup info only), countdown banner, month calendar with prev/next (selected trip lime, others pink), collapsible trip plans, past-ticket stack that swaps into the main view.
 - [ ] **4. Flight lookup**: Supabase edge function: flight number + date → airline, times, arrival terminal/gate, status (AeroDataBox or Aviationstack). Add/edit flight sheet. Gate shows "TBA" until known.
 - [ ] **5. Plans**: ideas list, location dropdown (incl. "within X mi"), type chips, pin added items, hearts (pink = Melody, lime = partner), source link icon, address line, event/seasonal date chips with "During [trip]" / "No trip booked", new-idea sheet.
 - [ ] **6. Home**: city card with weather (Open-Meteo), miles apart, fave songs (paste a YouTube Music link → title/artist/thumbnail via oEmbed), free-text status banner.
@@ -20,6 +20,30 @@ Already done from memoryi: PWA scaffold (Vite, manifest, service worker, icons, 
 ## Session log
 
 <!-- Claude Code: add an entry per session: date, step, what changed, files touched, open questions. -->
+
+### 2026-10-27 — Step 3: Trips tab
+**Changed**
+- `src/screens/TripsScreen.tsx` was built from Trips.html, using `useTrips`, `useMembers`, `useIdeas` and `useTripPlans`.
+- New components:
+  - `src/components/ui/Ticket.tsx` (normal, used, strip)
+  - `src/components/trips/CountdownBanner.tsx`, `TripCalendar.tsx`, `TripPlans.tsx`, `PastTicketStack.tsx`
+- Date logic in `src/lib/trips.ts`:
+  - `nextTrip`, `pastTrips`, `defaultTrip`, `countdown`, `daysBetween`
+  - `bandSegments`, `monthGrid`
+  - formatting: ticket date, 24-hour airport-local times, plan count and type labels
+  - tests in `src/lib/__tests__/trips.test.ts`
+- `/dev/ui` has a Trips section: the ticket (normal, used, strip, TBA) and the countdown (days, today, together, none).
+- Plan checkboxes save through `setTripPlanDone`, changing back if the save fails. The pencil is a placeholder (`TODO(step 4)`).
+- No new tokens and no data-layer changes.
+
+**Verified**
+- `npm test` (125 passing), `npm run lint` and `npm run build`.
+- The screen, server-rendered with the seed trips and today = Oct 27, shows the expected countdown, ticket values, calendar bands and stack.
+- **Not yet checked on a phone.**
+
+**Open questions**
+- Times use a small map of West Coast airports to time zones. A new airport elsewhere needs adding there (or step 4's flight lookup can supply the zone).
+- The plans checklist can tick items but not add or remove them; "Add from ideas" links to Plans (step 5).
 
 ### 2026-10-27 — Step 1: design system + tab shell
 **Changed**

@@ -63,6 +63,14 @@ People are shown by short codes (e.g. **MEL**, **YIC**), not names or profile ph
 - **Navigation**: four tabs (Home, Trips, Plans, Passport) plus a stamp page at `/passport/stamps/:tripId` with no tab bar. Old memoryi URLs (`/cards`, `/shuffle`, …) redirect to Home.
 - **Component gallery**: `/dev/ui` exists only in development (`npm run dev`). It isn't in the deployed app.
 - **Status bar**: iOS's `default` style, with dark text on a status bar iOS draws above the page, rather than a translucent one over the content.
+- **Trips countdown**:
+  - "LANDING IN [NN] DAYS" counts to the start of the next visit that hasn't begun yet.
+  - It says "LANDING TODAY" on the arrival day, "TOGETHER NOW" mid-visit (including the last day), and "NO TRIP BOOKED" when nothing is ahead.
+  - It never follows a past ticket you've tapped.
+- **Trips default ticket**: the visit you're on, or else the next one. If there's nothing ahead, the most recent past trip, marked USED.
+- **Past-ticket stack**: as in Trips.html, the oldest is at the top as a strip and the most recent past trip is the full ticket at the front.
+- **Flight times**: shown in the airport's time zone (West Coast airports are mapped; others use the phone's zone).
+- **Trip plan labels**: "Event" for ideas with a date or season, otherwise Eat / Do / Go / Stay. Items typed in by hand have no label. The name follows the idea if it's renamed.
 - **Fonts**: self-hosted and loaded only for the latin character set (English plus accented letters), so they work offline. Chinese text such as 做啥呢 uses the phone's system font.
 
 ## Out of scope for now
