@@ -14,6 +14,8 @@ export interface CreateEntryInput {
   photos?: string[]
   /** The wishlist card this entry fulfilled, if any. */
   sourceCardId?: string
+  /** The trip these photos belong to, if any. */
+  tripId?: string
 }
 
 export async function listEntries(): Promise<Entry[]> {
@@ -23,6 +25,19 @@ export async function listEntries(): Promise<Entry[]> {
     .select("*")
     .eq("space_id", spaceId)
     .order("entry_date", { ascending: false })
+    .returns<Entry[]>()
+
+  if (error) throw error
+  return data
+}
+
+/** A trip's photo posts (for its stamp + scrapbook page), oldest first. */
+export async function listEntriesForTrip(tripId: string): Promise<Entry[]> {
+  const { data, error } = await supabase
+    .from("entries")
+    .select("*")
+    .eq("trip_id", tripId)
+    .order("entry_date", { ascending: true })
     .returns<Entry[]>()
 
   if (error) throw error
@@ -42,6 +57,7 @@ export async function createEntry(input: CreateEntryInput): Promise<Entry> {
       caption: input.caption ?? null,
       photos: input.photos ?? [],
       source_card_id: input.sourceCardId ?? null,
+      trip_id: input.tripId ?? null,
       created_by: userId,
     })
     .select()

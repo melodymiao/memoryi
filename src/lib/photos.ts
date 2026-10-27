@@ -57,6 +57,48 @@ export async function deleteEntryPhoto(path: string): Promise<void> {
   if (error) throw error
 }
 
+/**
+ * Postcard photos live in their own private bucket, `postcard-photos`, at
+ * "<space_id>/<postcard_id>/<random>.<ext>". Unlike entry photos, being a
+ * space member isn't enough to read one — you have to be able to see the
+ * postcard row that references it (the unlock rule; see
+ * supabase/migrations/20261027120500_postcard_storage.sql). So a signed URL
+ * for a still-locked postcard just fails.
+ */
+const POSTCARD_BUCKET = "postcard-photos"
+
+/** Uploads one postcard photo and returns its Storage path (what goes in
+ * `postcards.photo_path` / `secondary_photo_path`). */
+export async function uploadPostcardPhoto(spaceId: string, postcardId: string, file: File): Promise<string> {
+  const path = `${spaceId}/${postcardId}/${crypto.randomUUID()}${extensionOf(file.name)}`
+  const { error } = await supabase.storage.from(POSTCARD_BUCKET).upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  })
+  if (error) throw error
+  return path
+}
+
+/** Signed URLs for postcard photos, keyed by storage path. Paths you can't
+ * see (locked postcards) are left out. */
+export async function getPostcardPhotoUrls(paths: string[], expiresInSeconds = 3600): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+  const { data, error } = await supabase.storage.from(POSTCARD_BUCKET).createSignedUrls(paths, expiresInSeconds)
+  if (error || !data) throw error ?? new Error("Failed to create signed URLs")
+  const out: Record<string, string> = {}
+  for (const item of data) {
+    if (item.path && item.signedUrl) out[item.path] = item.signedUrl
+  }
+  return out
+}
+
+/** Only the uploader can delete (storage policy). */
+export async function deletePostcardPhotos(paths: string[]): Promise<void> {
+  if (paths.length === 0) return
+  const { error } = await supabase.storage.from(POSTCARD_BUCKET).remove(paths)
+  if (error) throw error
+}
+
 /** Uploads a screenshot showing where a card's recommendation came from and
  * returns its Storage path (what goes in `cards.source_screenshot`). Lives in
  * the same bucket as entry photos, under "<space_id>/card-sources/". */

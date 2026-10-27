@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { ensureSession } from "../lib/auth"
 import { getMySpaceId } from "./spaces"
+import { step } from "./step"
 import { uploadCardPhoto, uploadCardSourceScreenshot } from "../lib/photos"
 import type { Card, CardStatus } from "../types/database"
 
@@ -44,18 +45,6 @@ function normalizeCard(row: Card): Card {
     source_person: row.source_person ?? null,
     source_link: row.source_link ?? null,
     source_screenshot: row.source_screenshot ?? null,
-  }
-}
-
-/** Runs one stage of a save and, if it throws, says which stage — a bare
- * "Load failed" (Safari's network-error message) doesn't say whether the
- * screenshot upload or the save itself failed. */
-async function step<T>(label: string, run: () => Promise<T>): Promise<T> {
-  try {
-    return await run()
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    throw new Error(`${label} failed: ${message}`, { cause: err })
   }
 }
 

@@ -22,6 +22,7 @@ const fixtureEntry = {
   caption: "galbi jjim, medium spice",
   photos: ["space-1/entry-1/a.jpg"],
   source_card_id: null,
+  trip_id: null,
   created_by: USER_ID,
   created_at: "2026-09-01T00:00:00.000Z",
 }
@@ -60,6 +61,7 @@ describe("createEntry", () => {
       caption: null,
       photos: [],
       source_card_id: null,
+      trip_id: null,
       created_by: USER_ID,
     })
   })

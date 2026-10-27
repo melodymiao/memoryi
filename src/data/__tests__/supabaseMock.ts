@@ -9,7 +9,21 @@ import { vi } from "vitest"
  */
 export function makeQueryMock(result: { data: unknown; error: unknown }) {
   const builder: Record<string, unknown> = {}
-  const chainable = ["select", "eq", "order", "limit", "insert", "update", "delete", "single", "maybeSingle", "returns"]
+  const chainable = [
+    "select",
+    "eq",
+    "gte",
+    "lt",
+    "order",
+    "limit",
+    "insert",
+    "update",
+    "upsert",
+    "delete",
+    "single",
+    "maybeSingle",
+    "returns",
+  ]
   for (const method of chainable) {
     builder[method] = vi.fn(() => builder)
   }

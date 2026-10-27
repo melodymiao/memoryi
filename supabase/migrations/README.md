@@ -30,6 +30,39 @@ workflow. Until then, apply these by hand:
       to `cards` for the "near me" filter. Required before saving a card with
       the updated app.
 
+   **LDR redesign (step 2)** — run these in order. Each is safe to re-run.
+
+  11. `20261027120000_ldr_members.sql` — profile fields on `space_members`
+      (display code, home city/airport/lat/lng), lets members see each other,
+      `spaces.postcard_ttl_hours`.
+  12. `20261027120100_trips.sql` — `trips` + `entries.trip_id`.
+  13. `20261027120200_ideas.sql` — `ideas` + `idea_favorites`, and copies
+      `cards` into `ideas`. Re-run it later to copy cards added since.
+  14. `20261027120300_trip_plans.sql` — `trip_plans`.
+  15. `20261027120400_postcards.sql` — `postcards`, the expiry trigger,
+      `can_view_postcard()` (the unlock rule), `has_locked_postcard()`.
+  16. `20261027120500_postcard_storage.sql` — `postcard-photos` bucket +
+      policies. Needs 15 first.
+  17. `20261027120600_statuses_songs.sql` — `statuses`, `favorite_songs`.
+  18. `20261027120700_passport_stats.sql` — `get_passport_stats()`.
+
+## Sample data (optional)
+
+`supabase/seed/ldr_sample_data.sql` is **not** a migration — it fills in
+sample trips, ideas, trip plans, statuses and fave songs, and sets both
+profiles (MEL = San Francisco/SFO, YIC = San Diego/SAN). Run it after the
+migrations above. It needs both of you as space members: by default it takes
+the space's two members in join order (first = MEL). If the space has more
+than two member rows (e.g. one per device), set `mel_override` /
+`yic_override` at the top of the file. Re-running is harmless; the block at
+the bottom removes it.
+
+## Checking RLS + the postcard unlock rule
+
+After the migrations and the seed, run `supabase/checks/verify_ldr.sql`. It
+impersonates MEL, YIC and a stranger, and ends with a table of checks.
+Every `pass` should be true. It cleans up after itself.
+
 Once you have the CLI (`supabase login`, `supabase link --project-ref
 <ref>`), these same files apply via `supabase db push`, and future schema
 changes should be added as new timestamped files here rather than editing
